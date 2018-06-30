@@ -1,0 +1,22 @@
+{
+  "name": "webplatform",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/luizcf14/webplatform.git"
+  },
+  "bugs": {
+    "url": "https://github.com/luizcf14/webplatform/issues"
+  },
+  "homepage": "https://github.com/luizcf14/webplatform#readme",
+  "description": "",
+  "dependencies": {
+    "@google/earthengine": "^0.1.143"
+  }
+}
