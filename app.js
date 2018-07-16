@@ -1,11 +1,24 @@
+var path = require('path');
 var server = require('./config/server');
-var app  = server.getApp();
-var port = server.getPort();
 var router = require('./config/router');
+var ee = require('./config/earthEngine');
 
-//Starts the server.
-app.listen(port, function(){
-    console.log('Servidor inciado com sucesso!');
+var keyFile = "serviceKey.json";
+
+server.initPublicPath(__dirname);
+ee = ee.init(__dirname + path.sep + keyFile);
+
+var app = server.getApp();
+var port = server.getPort();
+
+
+ee.initialize(null, null, () => {
+    //Starts the server.
+    
+
+    app.listen(port, function () {
+        console.log('Servidor inciado com sucesso!');
+    });
+    //Start Router
+    router.initRouter(app, ee, __dirname); 
 });
-//Start Router
-router.initRouter(app);
