@@ -15,6 +15,24 @@
 
 html, body, #container {
     height: 100%;
-    width: 100%;
+    max-height: 100%;
+    width: 100%;    
     overflow: hidden;
 }
+
+/*Loading animation*/
+.glyphicon-refresh-animate {
+    -animation: spin .13s infinite linear;
+    -webkit-animation: spin2 .13s infinite linear;
+}
+
+@-webkit-keyframes spin2 {
+    from { -webkit-transform: rotate(360deg);}
+    to { -webkit-transform: rotate(0deg);}
+}
+
+@keyframes spin {
+    from { transform: scale(1) rotate(360deg);}
+    to { transform: scale(1) rotate(0deg);}
+}
+/*Loading animation*/

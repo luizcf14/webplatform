@@ -20,11 +20,23 @@ function geeAlfa(app, ee) {
         //response.send({ 'token': Mapa.token, 'mapid': Mapa.mapid});
     });
 };
+function geeTemporalVisualization(app, ee){
+    app.get('/gee/temporalVisualization/pixelVariation', function(request, response){
+        geeFunction = require(publicPath + path.sep + 'gee' + path.sep + 'temporalVisualization' + path.sep + 'pixelVariation.js');
+        geeFunction.run(ee, request, function(result){
+            console.log('Enviando resultados');
+            response.send(result);
+        });                
+    });
+}
 
 let router = function (app, ee, public) {
     defaultRoute(app, '/', 'home/home');
     defaultRoute(app, '/about', 'about/about');
+
     geeAlfa(app, ee);
+    geeTemporalVisualization(app, ee);
+
     defaultRoute(app, '*', 'pageNotFound/404');
     publicPath = public + path.sep + 'public';
     console.log('Sistema de rotas iniciado com sucesso.');

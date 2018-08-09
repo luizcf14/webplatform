@@ -12,10 +12,10 @@ let run = function (ee) {
     });
     console.log('Função alfa executada corretamente!');
     return {
-        'tokenMaba': mabaMapa.token, 'idMaba': mabaMapa.mapid,
-        'token87': brasil_87Mapa.token, 'id87': brasil_87Mapa.mapid,
-        'token88': brasil_88Mapa.token, 'id88': brasil_88Mapa.mapid,
-        'tokencoisa': coisaMapa.token, 'idcoisa': coisaMapa.mapid
+        'key_1': [mabaMapa.mapid, mabaMapa.token, 'Maba'],
+        'key_2': [brasil_87Mapa.mapid, brasil_87Mapa.token, 'Brasil 1987'],
+        'key_3': [brasil_88Mapa.mapid, brasil_88Mapa.token, 'Brasil 1988'],
+        'key_4': [coisaMapa.mapid, coisaMapa.token, 'Brasil']
     }
 };
 
