@@ -1,4 +1,4 @@
-//require('express') return a function.
+﻿//require('express') return a function.
 var path = require('path');
 var express = require('express');
 
@@ -6,7 +6,7 @@ var express = require('express');
 var app = express();
 
 //Application port.
-var port = 5000;
+var port = 21039;
 
 //Altera o gerencamento do view engine do express.
 //Repassa o gerenciamento para o EJS.
