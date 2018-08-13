@@ -1,7 +1,8 @@
-﻿<!DOCTYPE html>
+﻿
 <html lang="pt-br">
 
 <head>
+    
     <title>Wep Application</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
@@ -17,7 +18,7 @@
     <!-- Google Charts -->
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"> </script>
     
-    <link href="platform/css/home/home.css" rel="stylesheet" type="text/css">
+    <link href="css/home/home.css" rel="stylesheet" type="text/css">
 
 </head>
 
@@ -26,7 +27,7 @@
 	<nav class="navbar navbar-expand-lg navbar-light bg-light navbar-fixed-top">
         	<div class="container-fluid">
             		<div class="navbar-header">
-                		<a class="navbar-brand" href="#">App Mangue</a>
+                		<a class="navbar-brand" href="#">Mangrove Platform Beta</a>
             		</div>
         	</div>
     	</nav>
@@ -38,7 +39,7 @@
                 <div class="modal-dialog modal-lg" role="document">
                     <div class="modal-content" id="graph">
                         <div class="modal-header">
-                            <h5 class="modal-title" id="TVL">Varaiação Temporal</h5>
+                            <h5 class="modal-title" id="TVL">Variação Temporal</h5>
                             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                 <span aria-hidden="true">&times;</span>
                             </button>
@@ -70,9 +71,8 @@
                         return new google.visualization.LineChart(document.getElementById('chart_div'));
                 }            
             }
-        </script>
-    
-        <script src="platform/scripts/home/home.js"></script>
+        </script>    
+        <script  src="scripts/home/home.js"></script>
 </body>
 
 </html>

@@ -12,7 +12,7 @@ let finalMap = L.map('mapid', {
 });
 
 defaultMap.addTo(finalMap);
-$.get('platform/gee/assetsVisualization/scriptAlfa', null, function (data) {
+$.get('gee/assetsVisualization/scriptAlfa', null, function (data) {
     //console.log(data);
     let mapLayers = [];
     let keys = Object.keys(data);
@@ -51,7 +51,7 @@ $.get('platform/gee/assetsVisualization/scriptAlfa', null, function (data) {
         $("#TVGraph").modal();
         document.getElementById('chart_div').innerHTML = '<div class="center-block"><span class="fa fa-cog fa-spin"></span> Carregando</div>';
         //$("#saveGraphPNG").attr('class', 'modal-footer d-none');        
-        $.get('platform/gee/temporalVisualization/pixelVariation', 'lat=' + (e.latlng.lat) + '&lon=' +(e.latlng.lng), function (data) {
+        $.get('gee/temporalVisualization/pixelVariation', 'lat=' + (e.latlng.lat) + '&lon=' +(e.latlng.lng), function (data) {
             creatGraph(data);
         });        
 	}

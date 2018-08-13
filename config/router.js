@@ -9,19 +9,21 @@ function defaultRoute(app, route, view) {
         //Método render é do ejs!
         //O método rende procura automaticamento o diretorio views.
         //Ele espera um arquivo com a extensão 'ejs'	
+       // console.log(request.url);
+
         response.render(view);	
     });
 };
 
 function geeAlfa(app, ee) {
-    app.get('//gee/assetsVisualization/scriptAlfa', function (request, response) {
+    app.get('gee/assetsVisualization/scriptAlfa', function (request, response) {
 	geeFunction = require(publicPath + path.sep + 'gee' + path.sep + 'assetsVisualization' + path.sep + 'scriptAlfa.js');
 	response.send(geeFunction.run(ee));
         //response.send({ 'token': Mapa.token, 'mapid': Mapa.mapid});
     });
 };
 function geeTemporalVisualization(app, ee){
-    app.get('//gee/temporalVisualization/pixelVariation', function(request, response){
+    app.get('gee/temporalVisualization/pixelVariation', function(request, response){
 	geeFunction = require(publicPath + path.sep + 'gee' + path.sep + 'temporalVisualization' + path.sep + 'pixelVariation.js');
         geeFunction.run(ee, request, function(result){
             response.send(result);
@@ -36,7 +38,7 @@ let router = function (app, ee, public) {
     geeAlfa(app, ee);
     geeTemporalVisualization(app, ee);
 
-    defaultRoute(app, '*', 'pageNotFound/404');
+    //defaultRoute(app, '*', ' pageNotFound/404');
     publicPath = public + path.sep + 'public';
     console.log('Sistema de rotas iniciado com sucesso.', publicPath);
 };
