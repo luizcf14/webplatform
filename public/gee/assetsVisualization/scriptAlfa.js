@@ -1,4 +1,8 @@
-let run = function (ee) {
+﻿//var module = { exports: {} };
+//let exports = module.exports   = {};
+//var exports = module.exports = {};
+
+exports.run = function (ee) {
     let maba = ee.Image('users/luizcf14/AmericaSul/BR_1991_class_MABA');
     let brasil_87 = ee.Image('users/gilbertonerinojr/assetsApicum/BRAZIL_North_1987');
     let brasil_88 = ee.Image('users/gilbertonerinojr/assetsApicum/BRAZIL_North_1988');
@@ -10,7 +14,7 @@ let run = function (ee) {
     let coisaMapa = coisaNova.randomVisualizer().getMap({
         bands: ["red", "nir", "swir1"], gamma: 1, min: 101, max: 141, opacity: 1
     });
-    console.log('Função alfa executada corretamente!');
+    //console.log('Função alfa executada corretamente!');
     return {
         'key_1': [mabaMapa.mapid, mabaMapa.token, 'Maba'],
         'key_2': [brasil_87Mapa.mapid, brasil_87Mapa.token, 'Brasil 1987'],
@@ -19,6 +23,9 @@ let run = function (ee) {
     }
 };
 
-module.exports = {
-    run: run
-};
+//module.exports = {
+//    run: run
+//};
+
+
+

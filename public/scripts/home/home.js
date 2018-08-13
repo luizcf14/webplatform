@@ -1,4 +1,4 @@
-//let mymap = L.map('mapid').setView([-1.464261, -48.470320], 5);
+﻿//let mymap = L.map('mapid').setView([-1.464261, -48.470320], 5);
 let defaultMap = L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
     maxZoom: 18,
     id: 'mapbox.streets',
@@ -12,13 +12,14 @@ let finalMap = L.map('mapid', {
 });
 
 defaultMap.addTo(finalMap);
-$.get('/gee/assetsVisualization/scriptAlfa', null, function (data) {
+$.get('platform/gee/assetsVisualization/scriptAlfa', null, function (data) {
+    //console.log(data);
     let mapLayers = [];
     let keys = Object.keys(data);
     let max = keys.length;
     let layersValues = [max];
     let base = {};
-
+    //console.log('Keys', keys);
     for (let index = 0; index < max; index++) {
         let values = data[keys[index]];
         let temp = L.tileLayer('https://earthengine.googleapis.com/map/{mapid}/{z}/{x}/{y}?token={token}', {
@@ -46,11 +47,11 @@ $.get('/gee/assetsVisualization/scriptAlfa', null, function (data) {
     var popup = L.popup();
 
 	function onMapClick(e) {
-        popup.setLatLng(e.latlng).setContent("Carregando!").openOn(finalMap);
+        //popup.setLatLng(e.latlng).setContent("Carregando!").openOn(finalMap);
         $("#TVGraph").modal();
         document.getElementById('chart_div').innerHTML = '<div class="center-block"><span class="fa fa-cog fa-spin"></span> Carregando</div>';
-        $("#saveGraphPNG").attr('class', 'modal-footer d-none');        
-        $.get('/gee/temporalVisualization/pixelVariation', 'lat=' + (e.latlng.lat) + '&lon=' +(e.latlng.lng), function (data) {
+        //$("#saveGraphPNG").attr('class', 'modal-footer d-none');        
+        $.get('platform/gee/temporalVisualization/pixelVariation', 'lat=' + (e.latlng.lat) + '&lon=' +(e.latlng.lng), function (data) {
             creatGraph(data);
         });        
 	}
@@ -97,7 +98,7 @@ function creatGraph(data)
 
     let chart =  getGoogleVizualization("LineChart");    
     chart.draw(graph, options);
-    $("#saveGraphPNG").attr('class', 'modal-footer');
+    //$("#saveGraphPNG").attr('class', 'modal-footer');
 
     currentChart   = chart;
     currentGraph   = graph;

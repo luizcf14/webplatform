@@ -14,10 +14,8 @@ var port = server.getPort();
 
 ee.initialize(null, null, () => {
     //Starts the server.
-    
-
     app.listen(port, function () {
-        console.log('Servidor inciado com sucesso!');
+        console.log('Servidor inciado com sucesso! Porta  = ', port);
     });
     //Start Router
     router.initRouter(app, ee, __dirname); 

@@ -1,4 +1,4 @@
-let run = function (ee, request, callBack) {
+exports.run = function (ee, request, callBack) {
     
     let query = JSON.parse(JSON.stringify(request.query));
     let keys  = Object.keys(query); 
@@ -42,12 +42,12 @@ let run = function (ee, request, callBack) {
     for(let index = 0; index < max; index ++) {
         result[index] = getRandomIntInclusive(min, max);
     }
-    console.log(JSON.stringify(result));
+    //console.log(JSON.stringify(result));
     return JSON.stringify(result);
     */
     
 };
 
-module.exports = {
-    run: run
-};
+//module.exports = {
+//    run: run
+//};
