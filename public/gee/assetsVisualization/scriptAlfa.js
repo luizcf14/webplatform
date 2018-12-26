@@ -1,7 +1,58 @@
-﻿//var module = { exports: {} };
+﻿exports.run = function (ee, request, response, db) {
+    var query = JSON.parse(JSON.stringify(request.query));
+    var year = parseInt(query['year']);
+
+    var image = ee.Image('projects/samm/SAMM/Mosaic/' + year);
+    var pontosMangue;
+
+    var regiao = 'AP';
+    pontosMangue = ee.FeatureCollection('projects/samm/Mapbiomas/Classificacao/Pontos/' + regiao + '/pts_class_5_' + year);
+
+    regiao = 'ESSP';
+    pontosMangue = pontosMangue.merge(ee.FeatureCollection('projects/samm/Mapbiomas/Classificacao/Pontos/' + regiao + '/pts_class_5_' + year));
+
+    regiao = 'MAR';
+    pontosMangue = pontosMangue.merge(ee.FeatureCollection('projects/samm/Mapbiomas/Classificacao/Pontos/' + regiao + '/pts_class_5_' + year));
+
+    regiao = 'PAMA';
+    pontosMangue = pontosMangue.merge(ee.FeatureCollection('projects/samm/Mapbiomas/Classificacao/Pontos/' + regiao + '/pts_class_5_' + year));
+
+    regiao = 'PEBA';
+    pontosMangue = pontosMangue.merge(ee.FeatureCollection('projects/samm/Mapbiomas/Classificacao/Pontos/' + regiao + '/pts_class_5_' + year));
+
+    regiao = 'PIPB';
+    pontosMangue = pontosMangue.merge(ee.FeatureCollection('projects/samm/Mapbiomas/Classificacao/Pontos/' + regiao + '/pts_class_5_' + year));
+
+    regiao = 'SPSC';
+    pontosMangue = pontosMangue.merge(ee.FeatureCollection('projects/samm/Mapbiomas/Classificacao/Pontos/' + regiao + '/pts_class_5_' + year));
+
+    var classification = ee.Image('projects/samm/SAMM/Classification_3/10_' + year);
+
+    var NDVI = image.select('NDVI');
+    var NDWI = image.select('NDWI');
+    var NDVI_sub_NDWI = NDWI.subtract(NDVI);
+    var MMRI = image.select('MMRI');
+
+    //===Auto Stretch===
+    var minMax = NDVI.reduceRegion({
+        reducer: ee.Reducer.percentile([1, 95]),
+        maxPixels: 1e12,
+        scale: 30
+    });
+    //================== 
+    var imgNDVI = NDVI.visualize({ min: minMax.get("NDVI_p1"), max: minMax.get("NDVI_p95") });
+    response.send({
+        //'key_1': [brasil.mapid, brasil.token, 'Landsat Mosaic', 0],
+        'key_4': [newMangroveClassificationMap.mapid, newMangroveClassificationMap.token, 'Solved', 0], //Mangrove Brasil - (Cesar Diniz et al, 2018)
+        'key_2': [chandraMap.mapid, chandraMap.token, 'NASA', 0], //Mangrove (Giri Chandra et al, 2013)
+        'key_3': [mangroveMap.mapid, mangroveMap.token, 'MapBiomas', 1], //Mangrove Frequence            
+        'points': success.rows
+    });
+};
+//var module = { exports: {} };
 //let exports = module.exports   = {};
 //var exports = module.exports = {};
-
+/*
 exports.run = function (ee, request, response, db) {
 
     let query = JSON.parse(JSON.stringify(request.query));
@@ -65,3 +116,4 @@ exports.run = function (ee, request, response, db) {
         response.send(error);
     });
 };
+*/
