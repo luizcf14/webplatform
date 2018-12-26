@@ -26,8 +26,8 @@ exports.run = function (ee, request, callBack) {
         pontoAtual = pontoAtual.reduceRegion(ee.Reducer.mean(), geometry);
         
         pontoAtual.evaluate(function(info){            
-            let chave = Object.keys(info);
-            chave     = chave[0];
+            let chave  = Object.keys(info);
+            chave      = chave[0];
             let ano    = parseInt(chave.replace('y', ''));            
             pontosValores[ano.toString()] = info[chave];
             if(chave === 'y' + anoFinal) {                
