@@ -2,52 +2,79 @@
     var query = JSON.parse(JSON.stringify(request.query));
     var year = parseInt(query['year']);
 
+    var integrated = ee.ImageCollection('projects/mapbiomas-workspace/COLECAO3/integracao-ft-dev').filterMetadata('version', 'equals', '2').min();
+    var exp = '100*(b(0)+b(1)+b(2)+b(3)+b(4)+b(5)+b(6)+b(7)+b(8)+b(9)+b(10)+b(11)+b(12)+b(13)+b(14)+b(15)+b(16)+b(17)+b(18)+b(19)+b(20)+b(21)+b(22)+b(23)+b(24)+b(25)+b(26)+b(27)+b(28)+b(29)+b(30)+b(31)+b(32))/33';
+    var mangroveFreq = integrated.eq(5).expression(exp);
+    var annvFreq = integrated.eq(13).expression(exp);
+    var florFreq = integrated.eq(3).expression(exp);
+    var pastFreq = integrated.eq(15).or(integrated.eq(21)).expression(exp);
+    var aguaFreq = integrated.eq(33).expression(exp);
+    var savaFreq = integrated.eq(4).expression(exp);
+    var PeDuFreq = integrated.eq(23).or(integrated.eq(25)).expression(exp);
+    var riosFreq = integrated.eq(33).expression(exp);
+
+    mangroveFreq = mangroveFreq.where(mangroveFreq.lte(10), 0);
+    mangroveFreq = mangroveFreq.where(florFreq.gte(50), 0);
+    mangroveFreq = mangroveFreq.where(mangroveFreq.lte(35).and(florFreq.gte(30)), 0);
+    mangroveFreq = mangroveFreq.where(mangroveFreq.lte(35).and(savaFreq.gte(30)), 0);
+    mangroveFreq = mangroveFreq.where(mangroveFreq.lte(35).and(pastFreq.gte(30)), 0);
+    mangroveFreq = mangroveFreq.where(mangroveFreq.lte(35).and(annvFreq.gte(30)), 0);
+    mangroveFreq = mangroveFreq.where(mangroveFreq.lte(35).and(PeDuFreq.gte(30)), 0);
+    mangroveFreq = mangroveFreq.where(mangroveFreq.lte(35).and(florFreq.gte(30).and(riosFreq.gte(30))), 0);
+
+    var mangroveMap = (mangroveFreq.mask(mangroveFreq.neq(0))).getMap({ 'palette': '00ff00,ffff00,ff0000', 'min': 1, 'max': 100 });
+
+    var chandra = ee.ImageCollection('LANDSAT/MANGROVE_FORESTS').mosaic();
     var image = ee.Image('projects/samm/SAMM/Mosaic/' + year);
-    var pontosMangue;
+    var pontosMangue = null;
 
-    var regiao = 'AP';
-    pontosMangue = ee.FeatureCollection('projects/samm/Mapbiomas/Classificacao/Pontos/' + regiao + '/pts_class_5_' + year);
+    var regioes = ['AP', 'ESSP', 'MAR', 'PAMA', 'PEBA', 'PIPB', 'SPSC'];
+    regioes.forEach(regiao => {
+        if (pontosMangue == null) {
+            pontosMangue = ee.FeatureCollection('projects/samm/Mapbiomas/Classificacao/Pontos/' + regiao + '/pts_class_5_' + year);
+        } else {
+            pontosMangue = pontosMangue.merge(ee.FeatureCollection('projects/samm/Mapbiomas/Classificacao/Pontos/' + regiao + '/pts_class_5_' + year));
+        }
+    });
 
-    regiao = 'ESSP';
-    pontosMangue = pontosMangue.merge(ee.FeatureCollection('projects/samm/Mapbiomas/Classificacao/Pontos/' + regiao + '/pts_class_5_' + year));
-
-    regiao = 'MAR';
-    pontosMangue = pontosMangue.merge(ee.FeatureCollection('projects/samm/Mapbiomas/Classificacao/Pontos/' + regiao + '/pts_class_5_' + year));
-
-    regiao = 'PAMA';
-    pontosMangue = pontosMangue.merge(ee.FeatureCollection('projects/samm/Mapbiomas/Classificacao/Pontos/' + regiao + '/pts_class_5_' + year));
-
-    regiao = 'PEBA';
-    pontosMangue = pontosMangue.merge(ee.FeatureCollection('projects/samm/Mapbiomas/Classificacao/Pontos/' + regiao + '/pts_class_5_' + year));
-
-    regiao = 'PIPB';
-    pontosMangue = pontosMangue.merge(ee.FeatureCollection('projects/samm/Mapbiomas/Classificacao/Pontos/' + regiao + '/pts_class_5_' + year));
-
-    regiao = 'SPSC';
-    pontosMangue = pontosMangue.merge(ee.FeatureCollection('projects/samm/Mapbiomas/Classificacao/Pontos/' + regiao + '/pts_class_5_' + year));
-
-    var classification = ee.Image('projects/samm/SAMM/Classification_3/10_' + year);
-
+    var classification = ee.Image('projects/samm/SAMM/Classification_3/10_' + year).visualize({ palette: 'ff0000' });
     var NDVI = image.select('NDVI');
     var NDWI = image.select('NDWI');
-    var NDVI_sub_NDWI = NDWI.subtract(NDVI);
+    var NDVI_sub_NDWI = NDWI.subtract(NDVI).rename('NDVI_sub_NDWI');
     var MMRI = image.select('MMRI');
 
-    //===Auto Stretch===
-    var minMax = NDVI.reduceRegion({
-        reducer: ee.Reducer.percentile([1, 95]),
-        maxPixels: 1e12,
-        scale: 30
-    });
-    //================== 
-    var imgNDVI = NDVI.visualize({ min: minMax.get("NDVI_p1"), max: minMax.get("NDVI_p95") });
+    NDVI = autoStretch(ee, NDVI, 'NDVI', false).getMap();
+    NDWI = autoStretch(ee, NDWI, 'NDWI', false).getMap();
+    NDVI_sub_NDWI = autoStretch(ee, NDVI_sub_NDWI, 'NDVI_sub_NDWI', false).getMap();
+    MMRI = autoStretch(ee, MMRI, 'MMRI', false).getMap();
+    pontosMangue = pontosMangue.getMap();
+    classification = classification.getMap();
+    chandra = chandra.getMap({ "opacity": 1, "bands": ["1"], "min": 1, "max": 1, "palette": ["aa0000"] });
+
     response.send({
-        //'key_1': [brasil.mapid, brasil.token, 'Landsat Mosaic', 0],
-        'key_4': [newMangroveClassificationMap.mapid, newMangroveClassificationMap.token, 'Solved', 0], //Mangrove Brasil - (Cesar Diniz et al, 2018)
-        'key_2': [chandraMap.mapid, chandraMap.token, 'NASA', 0], //Mangrove (Giri Chandra et al, 2013)
-        'key_3': [mangroveMap.mapid, mangroveMap.token, 'MapBiomas', 1], //Mangrove Frequence            
-        'points': success.rows
+        'Solved': [classification.mapid, classification.token, 'Solved', 0],
+        'Chandra': [chandra.mapid, chandra.token, 'Chandra', 0],
+        'MapBiomas': [mangroveMap.mapid, mangroveMap.token, 'MapBiomas', 1],
+        'NDVI': [NDVI.mapid, NDVI.token, 'NDVI', 0],
+        'NDWI': [NDWI.mapid, NDWI.token, 'NDWI', 0],
+        'NDVI - NDWI': [NDVI_sub_NDWI.mapid, NDVI_sub_NDWI.token, 'NDVI - NDWI', 0],
+        'MMRI': [MMRI.mapid, MMRI.token, 'MMRI', 0],
+        'points': [pontosMangue.mapid, pontosMangue.token, 'Pontos', 0]
     });
+};
+//By Gilberto Nerino
+function autoStretch(ee, image, bandName, onOff) {
+    if (onOff) {
+        var minMax = image.reduceRegion({
+            reducer: ee.Reducer.percentile([1, 95]),
+            maxPixels: 1e12,
+            scale: 30
+        });
+        image = image.visualize({ min: minMax.get(bandName + "_p1"), max: minMax.get(bandName + "_p95") });
+        return image;
+    } else {
+        return image;
+    }
 };
 //var module = { exports: {} };
 //let exports = module.exports   = {};
@@ -109,7 +136,7 @@ exports.run = function (ee, request, response, db) {
             //'key_1': [brasil.mapid, brasil.token, 'Landsat Mosaic', 0],
             'key_4': [newMangroveClassificationMap.mapid, newMangroveClassificationMap.token, 'Solved', 0], //Mangrove Brasil - (Cesar Diniz et al, 2018)
             'key_2': [chandraMap.mapid, chandraMap.token, 'NASA', 0], //Mangrove (Giri Chandra et al, 2013)
-            'key_3': [mangroveMap.mapid, mangroveMap.token, 'MapBiomas', 1], //Mangrove Frequence            
+            'key_3': [mangroveMap.mapid, mangroveMap.token, 'MapBiomas', 1], //Mangrove Frequence
             'points': success.rows
         });
     }).catch((error) => {

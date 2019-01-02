@@ -38,7 +38,7 @@ function addMapLayers(currentYear) {
         let base = {};
         //console.log('Keys', keys);
         for (let index = 0; index < max; index++) {
-            if (keys[index] != "points") {
+            if (keys[index] != "points_postgis") {
                 let values = data[keys[index]];
                 let temp = L.tileLayer('https://earthengine.googleapis.com/map/{mapid}/{z}/{x}/{y}?token={token}', {
                     attribution: '',
@@ -83,7 +83,7 @@ function addMapLayers(currentYear) {
                 creatGraph(data);
             });
         }
-        //finalMap.on('click', onMapClick);
+        finalMap.on('click', onMapClick);
     });
 }
 
