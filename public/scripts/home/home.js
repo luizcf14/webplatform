@@ -13,6 +13,7 @@ let defaultMap = L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.p
 let finalMap = L.map('mapid', { center: [-1.464261, -48.470320], zoom: 5, layers: [defaultMap] });
 
 let MapLayers = null;
+let GraphLayer = null;
 let setOnclick = true;
 let selectYear = 2000;
 
@@ -66,7 +67,7 @@ function addMapLayers(currentYear) {
         }
 
         MapLayers = L.control.layers(null, base, { collapsed: false }).addTo(finalMap);
-        $( "<p>Test</p>" ).insertAfter( ".leaflet-control-layers.leaflet-control-layers-expanded.leaflet-control" );
+
         $(".rangeOption").each(function (key, elem) {
             $(elem).attr('id', 'rangeOpId_' + key);
             $("#rangeOpId_" + key).on("input change", function () {
@@ -76,10 +77,46 @@ function addMapLayers(currentYear) {
 
         function onMapClick(e) {
             //popup.setLatLng(e.latlng).setContent("Carregando!").openOn(finalMap);
-            $("#TVGraph").modal();
-            document.getElementById('chart_div').innerHTML = '<div class="center-block"><span class="fa fa-cog fa-spin"></span> Carregando</div>';
+            //$("#TVGraph").modal();
+            //document.getElementById('chart_div').innerHTML = '<div class="center-block"><span class="fa fa-cog fa-spin"></span> Carregando</div>';
             //$("#saveGraphPNG").attr('class', 'modal-footer d-none');
             $.get(platform + 'gee/temporalVisualization/pixelVariation', 'lat=' + (e.latlng.lat) + '&lon=' + (e.latlng.lng), function (data) {
+                L.Control.Graph = L.Control.extend({
+                    onAdd: function (map) {
+
+                        var main_div = L.DomUtil.create('div', '');
+                        var chart_div = L.DomUtil.create('div', '', main_div);
+                        L.DomEvent.disableClickPropagation(chart_div);
+                        chart_div.id = 'chartDiv';
+
+                        var header_div = L.DomUtil.create('div', '');                        
+                        header_div.id = 'headerDiv';
+
+                        var header_text = L.DomUtil.create('p', '');
+                        //header_text.innerHTML = 'Click here to move';
+
+                        var sub_div = L.DomUtil.create('div', '');
+                        sub_div.id = 'chart_div';
+
+                        header_div.appendChild(header_text);
+                        chart_div.appendChild(header_div);
+                        chart_div.appendChild(sub_div);
+
+                        return chart_div;
+                    },
+                    onRemove: function (map) {
+                    }
+                });
+                L.control.graph = function (opts) {
+                    return new L.Control.Graph(opts);
+                }
+                if (GraphLayer === null) {
+                    GraphLayer = L.control.graph({ position: 'bottomleft' }).addTo(finalMap);
+                } else {
+                    GraphLayer.remove();
+                    GraphLayer = L.control.graph({ position: 'bottomleft' }).addTo(finalMap);
+                }
+                //dragElement(document.getElementById("headerDiv"));
                 creatGraph(data);
             });
         }
@@ -94,12 +131,20 @@ let currentOptions = null;
 function creatGraph(data) {
     let graph = getGoogleVizualization("DataTable");
     data = JSON.parse(data);
-    let keys = Object.keys(data);
+    //let keys = Object.keys(data);
     let rows = [];
 
+    for (let index = 0; index < data.length; index++) {
+        let year_string = `${2000 + index}`;
+        let data_string = data[index];
+        rows.push([year_string, data_string]);
+    }
+    console.log(rows);
+    /*
     keys.forEach(key => {
         rows.push([key, data[key]]);
     });
+    */
 
     // Declare columns
     graph.addColumn('string', 'X');
@@ -147,7 +192,7 @@ function changeYear() {
 }
 
 function htmlOutput(name, op) {
-    let output = '';    
+    let output = '';
     output += '<strong>' + name + '</strong>';
     //output += '<br>'
     output += '<input class="rangeOption" type="range" min="0" max="1" step="0.01" value="1" style="width: 100%;"/>'
@@ -175,13 +220,11 @@ function htmlOutput(name, op) {
 };
 
 // Make the DIV element draggable:
-dragElement(document.getElementById("mydiv"));
-
 function dragElement(elmnt) {
     var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-    if (document.getElementById(elmnt.id + "header")) {
+    if (document.getElementById(elmnt.id)) {
         // if present, the header is where you move the DIV from:
-        document.getElementById(elmnt.id + "header").onmousedown = dragMouseDown;
+        document.getElementById(elmnt.id).onmousedown = dragMouseDown;
     } else {
         // otherwise, move the DIV from anywhere inside the DIV: 
         elmnt.onmousedown = dragMouseDown;

@@ -37,7 +37,7 @@
         }
     });
 
-    var classification = ee.Image('projects/samm/SAMM/Classification_3/10_' + year).visualize({ palette: 'ff0000' });
+    var classification = ee.Image('projects/samm/SAMM/Classification_3/' + year).visualize({ palette: 'ff0000' });
     var NDVI = image.select('NDVI');
     var NDWI = image.select('NDWI');
     var NDVI_sub_NDWI = NDWI.subtract(NDVI).rename('NDVI_sub_NDWI');

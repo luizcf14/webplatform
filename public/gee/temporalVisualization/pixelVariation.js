@@ -7,7 +7,7 @@ exports.run = function (ee, request, callBack) {
 
     var imageList = ee.List([]);
     for (var currentYear = startYear; currentYear <= endYear; currentYear++) {
-        imageList = imageList.add(ee.Image('projects/samm/SAMM/Classification_3/10_' + currentYear));
+        imageList = imageList.add(ee.Image('projects/samm/SAMM/Classification_3/' + currentYear).unmask(0));
     }
     var points = ee.ImageCollection(imageList).filterBounds(geometry);
     var totalPoints = points.size().getInfo();
@@ -20,7 +20,7 @@ exports.run = function (ee, request, callBack) {
         currentPoint = currentPoint.reduceRegion(ee.Reducer.mean(), geometry).get('classification_' + currentYear);
         currentPoint.evaluate(function (result) {
             variation.push(result);
-            if (variation.length == 17) {
+            if (variation.length == 18) {
                 callBack(JSON.stringify(variation));
             }
         });
