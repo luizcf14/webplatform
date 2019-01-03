@@ -30,8 +30,11 @@ function addMapLayers(currentYear) {
         finalMap = L.map('mapid', { center: centerValues, zoom: zoomValue, layers: [defaultMap] });
         MapLayers.remove();
     }
-
+    
+    $("#TVGraph").modal({backdrop: 'static', keyboard: false});
+    //document.getElementById('chart_div').innerHTML = '<div class="center-block"><span class="fa fa-cog fa-spin"></span> Carregando</div>';
     $.get(platform + 'gee/assetsVisualization/scriptAlfa', 'year=' + (currentYear), function (data) {
+        $("#TVGraph").modal('hide')
         //console.log(data);        
         let keys = Object.keys(data);
         let max = keys.length;
@@ -80,28 +83,30 @@ function addMapLayers(currentYear) {
             //$("#TVGraph").modal();
             //document.getElementById('chart_div').innerHTML = '<div class="center-block"><span class="fa fa-cog fa-spin"></span> Carregando</div>';
             //$("#saveGraphPNG").attr('class', 'modal-footer d-none');
+            $("#TVGraph").modal({backdrop: 'static', keyboard: false});
             $.get(platform + 'gee/temporalVisualization/pixelVariation', 'lat=' + (e.latlng.lat) + '&lon=' + (e.latlng.lng), function (data) {
                 L.Control.Graph = L.Control.extend({
                     onAdd: function (map) {
 
                         var main_div = L.DomUtil.create('div', '');
                         var chart_div = L.DomUtil.create('div', '', main_div);
-                        L.DomEvent.disableClickPropagation(chart_div);
-                        chart_div.id = 'chartDiv';
-
-                        var header_div = L.DomUtil.create('div', '');                        
-                        header_div.id = 'headerDiv';
-
+                        var header_div = L.DomUtil.create('div', '');
                         var header_text = L.DomUtil.create('p', '');
-                        //header_text.innerHTML = 'Click here to move';
-
                         var sub_div = L.DomUtil.create('div', '');
+
+                        chart_div.id = 'chartDiv';
+                        header_div.id = 'headerDiv';
+                        header_text.id = 'headerTextId';
                         sub_div.id = 'chart_div';
 
                         header_div.appendChild(header_text);
                         chart_div.appendChild(header_div);
                         chart_div.appendChild(sub_div);
 
+                        L.DomEvent.disableClickPropagation(main_div);
+                        L.DomEvent.disableClickPropagation(chart_div);
+                        L.DomEvent.disableClickPropagation(header_div);
+                        L.DomEvent.disableClickPropagation(sub_div);
                         return chart_div;
                     },
                     onRemove: function (map) {
@@ -116,9 +121,12 @@ function addMapLayers(currentYear) {
                     GraphLayer.remove();
                     GraphLayer = L.control.graph({ position: 'bottomleft' }).addTo(finalMap);
                 }
-                //dragElement(document.getElementById("headerDiv"));
+                //dragElement(document.getElementById("chartDiv"));
+                document.getElementById('headerDiv').addEventListener('mousedown', mouseDown, false);
+                window.addEventListener('mouseup', mouseUp, false);
                 creatGraph(data);
-            });
+                $("#TVGraph").modal('hide');
+            });            
         }
         finalMap.on('click', onMapClick);
     });
@@ -139,7 +147,6 @@ function creatGraph(data) {
         let data_string = data[index];
         rows.push([year_string, data_string]);
     }
-    console.log(rows);
     /*
     keys.forEach(key => {
         rows.push([key, data[key]]);
@@ -180,6 +187,8 @@ function creatGraph(data) {
     $(window).resize(function () {
         currentChart.draw(currentGraph, currentOptions);
     });
+    document.getElementById('headerTextId').innerHTML = 'Click aqui para mover';
+    document.getElementById('headerDiv').classList.add('headerDivCSS');
 }
 
 function savePNG() {
@@ -219,14 +228,34 @@ function htmlOutput(name, op) {
     }
 };
 
+
+function mouseUp() {
+    window.removeEventListener('mousemove', divMove, true);
+}
+
+function mouseDown(e) {
+    window.addEventListener('mousemove', divMove, true);
+}
+
+function divMove(e) {
+    var div = document.getElementById('chartDiv');
+    //div.style.position = 'absolute';
+    console.log(`DIV X = ${div.style.left} Y = ${div.style.top}`);
+    console.log(`MOU X = ${e.clientX} Y = ${e.clientY}`);
+    div.style.top = e.clientY + 'px';
+    div.style.left = e.clientX + 'px';
+}
+
+
+/*
 // Make the DIV element draggable:
 function dragElement(elmnt) {
-    var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-    if (document.getElementById(elmnt.id)) {
+    var currentX = 0, currentY = 0, startX = 0, startY = 0;    
+    if (elmnt.querySelector('#headerDiv')) {
         // if present, the header is where you move the DIV from:
-        document.getElementById(elmnt.id).onmousedown = dragMouseDown;
+        elmnt.querySelector('#headerDiv').onmousedown = dragMouseDown;
     } else {
-        // otherwise, move the DIV from anywhere inside the DIV: 
+        // otherwise, move the DIV from anywhere inside the DIV:
         elmnt.onmousedown = dragMouseDown;
     }
 
@@ -234,8 +263,9 @@ function dragElement(elmnt) {
         e = e || window.event;
         e.preventDefault();
         // get the mouse cursor position at startup:
-        pos3 = e.clientX;
-        pos4 = e.clientY;
+        startX = e.clientX;
+        startY = e.clientY;
+        console.log(`Start X = ${startX} Y = ${startY}`);
         document.onmouseup = closeDragElement;
         // call a function whenever the cursor moves:
         document.onmousemove = elementDrag;
@@ -245,13 +275,15 @@ function dragElement(elmnt) {
         e = e || window.event;
         e.preventDefault();
         // calculate the new cursor position:
-        pos1 = pos3 - e.clientX;
-        pos2 = pos4 - e.clientY;
-        pos3 = e.clientX;
-        pos4 = e.clientY;
+        currentX = e.clientX - startX;
+        currentY = e.clientY - startY ;
+        startX = e.clientX;
+        startY = e.clientY;
         // set the element's new position:
-        elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
-        elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+        console.log(currentX,currentY)
+        console.log(`Offsets Top = ${elmnt.offsetTop} Left = ${elmnt.offsetLeft}`);
+        elmnt.style.top = (e.clientY) + "px";
+        elmnt.style.left = (e.clientX) + "px";        
     }
 
     function closeDragElement() {
@@ -260,3 +292,4 @@ function dragElement(elmnt) {
         document.onmousemove = null;
     }
 }
+*/
