@@ -12,6 +12,7 @@ let defaultMap = L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.p
 
 let finalMap = L.map('mapid', { center: [-1.464261, -48.470320], zoom: 5, layers: [defaultMap] });
 
+let marker = null;
 let MapLayers = null;
 let GraphLayer = null;
 let setOnclick = true;
@@ -30,8 +31,8 @@ function addMapLayers(currentYear) {
         finalMap = L.map('mapid', { center: centerValues, zoom: zoomValue, layers: [defaultMap] });
         MapLayers.remove();
     }
-    
-    $("#TVGraph").modal({backdrop: 'static', keyboard: false});
+    tools(finalMap);
+    $("#TVGraph").modal({ backdrop: 'static', keyboard: false });
     //document.getElementById('chart_div').innerHTML = '<div class="center-block"><span class="fa fa-cog fa-spin"></span> Carregando</div>';
     $.get(platform + 'gee/assetsVisualization/scriptAlfa', 'year=' + (currentYear), function (data) {
         $("#TVGraph").modal('hide')
@@ -83,50 +84,62 @@ function addMapLayers(currentYear) {
             //$("#TVGraph").modal();
             //document.getElementById('chart_div').innerHTML = '<div class="center-block"><span class="fa fa-cog fa-spin"></span> Carregando</div>';
             //$("#saveGraphPNG").attr('class', 'modal-footer d-none');
-            $("#TVGraph").modal({backdrop: 'static', keyboard: false});
-            $.get(platform + 'gee/temporalVisualization/pixelVariation', 'lat=' + (e.latlng.lat) + '&lon=' + (e.latlng.lng), function (data) {
-                L.Control.Graph = L.Control.extend({
-                    onAdd: function (map) {
-
-                        var main_div = L.DomUtil.create('div', '');
-                        var chart_div = L.DomUtil.create('div', '', main_div);
-                        var header_div = L.DomUtil.create('div', '');
-                        var header_text = L.DomUtil.create('p', '');
-                        var sub_div = L.DomUtil.create('div', '');
-
-                        chart_div.id = 'chartDiv';
-                        header_div.id = 'headerDiv';
-                        header_text.id = 'headerTextId';
-                        sub_div.id = 'chart_div';
-
-                        header_div.appendChild(header_text);
-                        chart_div.appendChild(header_div);
-                        chart_div.appendChild(sub_div);
-
-                        L.DomEvent.disableClickPropagation(main_div);
-                        L.DomEvent.disableClickPropagation(chart_div);
-                        L.DomEvent.disableClickPropagation(header_div);
-                        L.DomEvent.disableClickPropagation(sub_div);
-                        return chart_div;
-                    },
-                    onRemove: function (map) {
-                    }
-                });
-                L.control.graph = function (opts) {
-                    return new L.Control.Graph(opts);
-                }
-                if (GraphLayer === null) {
-                    GraphLayer = L.control.graph({ position: 'bottomleft' }).addTo(finalMap);
+            if ($('.leaflet-container').css('cursor') === 'crosshair') {
+                $('.leaflet-container').css('cursor', '');
+                if (marker === null) {
+                    marker = L.marker([e.latlng.lat, e.latlng.lng]).addTo(finalMap);
                 } else {
-                    GraphLayer.remove();
-                    GraphLayer = L.control.graph({ position: 'bottomleft' }).addTo(finalMap);
+                    marker.remove();
+                    marker = L.marker([e.latlng.lat, e.latlng.lng]).addTo(finalMap);
                 }
-                //dragElement(document.getElementById("chartDiv"));
-                document.getElementById('headerDiv').addEventListener('mousedown', mouseDown, false);
-                window.addEventListener('mouseup', mouseUp, false);
-                creatGraph(data);
-                $("#TVGraph").modal('hide');
-            });            
+                $("#TVGraph").modal({ backdrop: 'static', keyboard: false });
+                $.get(platform + 'gee/temporalVisualization/pixelVariation', 'lat=' + (e.latlng.lat) + '&lon=' + (e.latlng.lng), function (data) {
+                    L.Control.Graph = L.Control.extend({
+                        onAdd: function (map) {
+
+                            var main_div = L.DomUtil.create('div', '');
+                            var chart_div = L.DomUtil.create('div', '', main_div);
+                            var header_div = L.DomUtil.create('div', 'text-right');
+                            var header_maximize = L.DomUtil.create('i', 'material-icons');
+                            var header_close = L.DomUtil.create('i', 'material-icons');
+                            var sub_div = L.DomUtil.create('div', '');
+
+                            chart_div.id = 'chartDiv';
+                            header_div.id = 'headerDiv';
+                            header_maximize.id = 'headerMaximize';
+                            header_close.id = 'headerClose';
+                            sub_div.id = 'chart_div';
+
+                            header_div.appendChild(header_maximize);
+                            header_div.appendChild(header_close);
+                            chart_div.appendChild(header_div);
+                            chart_div.appendChild(sub_div);
+
+                            L.DomEvent.disableClickPropagation(main_div);
+                            L.DomEvent.disableClickPropagation(chart_div);
+                            L.DomEvent.disableClickPropagation(header_div);
+                            L.DomEvent.disableClickPropagation(sub_div);
+                            return chart_div;
+                        },
+                        onRemove: function (map) {
+                        }
+                    });
+                    L.control.graph = function (opts) {
+                        return new L.Control.Graph(opts);
+                    }
+                    if (GraphLayer === null) {
+                        GraphLayer = L.control.graph({ position: 'bottomleft' }).addTo(finalMap);
+                    } else {
+                        GraphLayer.remove();
+                        GraphLayer = L.control.graph({ position: 'bottomleft' }).addTo(finalMap);
+                    }
+                    //dragElement(document.getElementById("chartDiv"));
+                    document.getElementById('headerDiv').addEventListener('mousedown', mouseDown, false);
+                    window.addEventListener('mouseup', mouseUp, false);
+                    creatGraph(data);
+                    $("#TVGraph").modal('hide');
+                });
+            }
         }
         finalMap.on('click', onMapClick);
     });
@@ -187,12 +200,40 @@ function creatGraph(data) {
     $(window).resize(function () {
         currentChart.draw(currentGraph, currentOptions);
     });
-    document.getElementById('headerTextId').innerHTML = 'Click aqui para mover';
+
+    let headerMaximize;
+    headerMaximize = document.getElementById('headerMaximize');
+    headerMaximize.innerHTML = 'zoom_out_map';
+    headerMaximize.style.padding = '0px 5px 5px 5px';
+    headerMaximize.onmouseover = () => {
+        headerMaximize.style.cursor = 'pointer';
+    }
+    headerMaximize.onclick = () => {
+        savePNG();
+    };
+
+    let headerClose = document.getElementById('headerClose');
+    headerClose.innerHTML = 'close';
+    headerClose.style.padding = '0px 5px 5px 5px';
+    headerClose.onmouseover = () => {
+        headerClose.style.cursor = 'pointer';
+    }
+    headerClose.onclick = () => {
+        if (GraphLayer != null) {
+            marker.remove();
+            marker = null;
+            GraphLayer.remove();
+            GraphLayer = null;
+        }
+    };
     document.getElementById('headerDiv').classList.add('headerDivCSS');
 }
 
 function savePNG() {
-    window.open(currentChart.getImageURI(), '_blank');
+    let newWindow = window.open();
+    newWindow.document.write("<div id='chart_div' style='width: 900px;'></div>");
+    let chart = new google.visualization.LineChart(newWindow.document.getElementById('chart_div'));
+    chart.draw(currentGraph, currentOptions);
 }
 
 function changeYear() {
@@ -293,3 +334,27 @@ function dragElement(elmnt) {
     }
 }
 */
+
+function tools(currentMap) {
+    L.Control.Pointer = L.Control.extend({
+        onAdd: function (map) {
+            var main_div = L.DomUtil.create('div');
+            var sub_div = L.DomUtil.create('div', 'leaflet-bar', main_div);
+            sub_div.style.backgroundColor = 'white';
+            var text = L.DomUtil.create('i', 'material-icons', sub_div);
+            text.style.cursor = 'pointer';
+            text.style.padding = '5px 3px 5px 3px';
+            text.innerHTML = 'location_on';
+            text.onclick = () => {
+                $('.leaflet-container').css('cursor', 'crosshair');
+            };
+            L.DomEvent.disableClickPropagation(sub_div);
+            return sub_div;
+        },
+        onRemove: function (map) { }
+    });
+    L.control.Pointer = function (opts) {
+        return new L.Control.Pointer(opts);
+    };
+    return L.control.Pointer({ position: 'topleft' }).addTo(currentMap);
+}
