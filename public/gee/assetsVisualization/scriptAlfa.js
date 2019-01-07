@@ -1,66 +1,78 @@
 ﻿exports.run = function (ee, request, response, db) {
     var query = JSON.parse(JSON.stringify(request.query));
     var year = parseInt(query['year']);
+    if (year.toString() != "NaN") {
+        var integrated = ee.ImageCollection('projects/mapbiomas-workspace/COLECAO3/integracao-ft-dev').filterMetadata('version', 'equals', '2').min();
+        var exp = '100*(b(0)+b(1)+b(2)+b(3)+b(4)+b(5)+b(6)+b(7)+b(8)+b(9)+b(10)+b(11)+b(12)+b(13)+b(14)+b(15)+b(16)+b(17)+b(18)+b(19)+b(20)+b(21)+b(22)+b(23)+b(24)+b(25)+b(26)+b(27)+b(28)+b(29)+b(30)+b(31)+b(32))/33';
+        var mangroveFreq = integrated.eq(5).expression(exp);
+        var annvFreq = integrated.eq(13).expression(exp);
+        var florFreq = integrated.eq(3).expression(exp);
+        var pastFreq = integrated.eq(15).or(integrated.eq(21)).expression(exp);
+        var aguaFreq = integrated.eq(33).expression(exp);
+        var savaFreq = integrated.eq(4).expression(exp);
+        var PeDuFreq = integrated.eq(23).or(integrated.eq(25)).expression(exp);
+        var riosFreq = integrated.eq(33).expression(exp);
 
-    var integrated = ee.ImageCollection('projects/mapbiomas-workspace/COLECAO3/integracao-ft-dev').filterMetadata('version', 'equals', '2').min();
-    var exp = '100*(b(0)+b(1)+b(2)+b(3)+b(4)+b(5)+b(6)+b(7)+b(8)+b(9)+b(10)+b(11)+b(12)+b(13)+b(14)+b(15)+b(16)+b(17)+b(18)+b(19)+b(20)+b(21)+b(22)+b(23)+b(24)+b(25)+b(26)+b(27)+b(28)+b(29)+b(30)+b(31)+b(32))/33';
-    var mangroveFreq = integrated.eq(5).expression(exp);
-    var annvFreq = integrated.eq(13).expression(exp);
-    var florFreq = integrated.eq(3).expression(exp);
-    var pastFreq = integrated.eq(15).or(integrated.eq(21)).expression(exp);
-    var aguaFreq = integrated.eq(33).expression(exp);
-    var savaFreq = integrated.eq(4).expression(exp);
-    var PeDuFreq = integrated.eq(23).or(integrated.eq(25)).expression(exp);
-    var riosFreq = integrated.eq(33).expression(exp);
+        mangroveFreq = mangroveFreq.where(mangroveFreq.lte(10), 0);
+        mangroveFreq = mangroveFreq.where(florFreq.gte(50), 0);
+        mangroveFreq = mangroveFreq.where(mangroveFreq.lte(35).and(florFreq.gte(30)), 0);
+        mangroveFreq = mangroveFreq.where(mangroveFreq.lte(35).and(savaFreq.gte(30)), 0);
+        mangroveFreq = mangroveFreq.where(mangroveFreq.lte(35).and(pastFreq.gte(30)), 0);
+        mangroveFreq = mangroveFreq.where(mangroveFreq.lte(35).and(annvFreq.gte(30)), 0);
+        mangroveFreq = mangroveFreq.where(mangroveFreq.lte(35).and(PeDuFreq.gte(30)), 0);
+        mangroveFreq = mangroveFreq.where(mangroveFreq.lte(35).and(florFreq.gte(30).and(riosFreq.gte(30))), 0);
 
-    mangroveFreq = mangroveFreq.where(mangroveFreq.lte(10), 0);
-    mangroveFreq = mangroveFreq.where(florFreq.gte(50), 0);
-    mangroveFreq = mangroveFreq.where(mangroveFreq.lte(35).and(florFreq.gte(30)), 0);
-    mangroveFreq = mangroveFreq.where(mangroveFreq.lte(35).and(savaFreq.gte(30)), 0);
-    mangroveFreq = mangroveFreq.where(mangroveFreq.lte(35).and(pastFreq.gte(30)), 0);
-    mangroveFreq = mangroveFreq.where(mangroveFreq.lte(35).and(annvFreq.gte(30)), 0);
-    mangroveFreq = mangroveFreq.where(mangroveFreq.lte(35).and(PeDuFreq.gte(30)), 0);
-    mangroveFreq = mangroveFreq.where(mangroveFreq.lte(35).and(florFreq.gte(30).and(riosFreq.gte(30))), 0);
+        var mangroveMap = (mangroveFreq.mask(mangroveFreq.neq(0))).getMap({ 'palette': '00ff00,ffff00,ff0000', 'min': 1, 'max': 100 });
 
-    var mangroveMap = (mangroveFreq.mask(mangroveFreq.neq(0))).getMap({ 'palette': '00ff00,ffff00,ff0000', 'min': 1, 'max': 100 });
+        var chandra = ee.ImageCollection('LANDSAT/MANGROVE_FORESTS').mosaic();
+        var image = ee.Image('projects/samm/SAMM/Mosaic/' + year);
+        var pontosMangue = null;
 
-    var chandra = ee.ImageCollection('LANDSAT/MANGROVE_FORESTS').mosaic();
-    var image = ee.Image('projects/samm/SAMM/Mosaic/' + year);
-    var pontosMangue = null;
+        var regioes = ['AP', 'ESSP', 'MAR', 'PAMA', 'PEBA', 'PIPB', 'SPSC'];
+        regioes.forEach(regiao => {
+            if (pontosMangue == null) {
+                pontosMangue = ee.FeatureCollection('projects/samm/Mapbiomas/Classificacao/Pontos/' + regiao + '/pts_class_5_' + year);
+            } else {
+                pontosMangue = pontosMangue.merge(ee.FeatureCollection('projects/samm/Mapbiomas/Classificacao/Pontos/' + regiao + '/pts_class_5_' + year));
+            }
+        });
 
-    var regioes = ['AP', 'ESSP', 'MAR', 'PAMA', 'PEBA', 'PIPB', 'SPSC'];
-    regioes.forEach(regiao => {
-        if (pontosMangue == null) {
-            pontosMangue = ee.FeatureCollection('projects/samm/Mapbiomas/Classificacao/Pontos/' + regiao + '/pts_class_5_' + year);
-        } else {
-            pontosMangue = pontosMangue.merge(ee.FeatureCollection('projects/samm/Mapbiomas/Classificacao/Pontos/' + regiao + '/pts_class_5_' + year));
-        }
-    });
+        var classification = ee.Image('projects/samm/SAMM/Classification_3/' + year).visualize({ palette: 'ff0000' });
+        var NDVI = image.select('NDVI');
+        var NDWI = image.select('NDWI');
+        var NDVI_sub_NDWI = NDWI.subtract(NDVI).rename('NDVI_sub_NDWI');
+        var MMRI = image.select('MMRI');
 
-    var classification = ee.Image('projects/samm/SAMM/Classification_3/' + year).visualize({ palette: 'ff0000' });
-    var NDVI = image.select('NDVI');
-    var NDWI = image.select('NDWI');
-    var NDVI_sub_NDWI = NDWI.subtract(NDVI).rename('NDVI_sub_NDWI');
-    var MMRI = image.select('MMRI');
+        NDVI = autoStretch(ee, NDVI, 'NDVI', false).getMap();
+        NDWI = autoStretch(ee, NDWI, 'NDWI', false).getMap();
+        NDVI_sub_NDWI = autoStretch(ee, NDVI_sub_NDWI, 'NDVI_sub_NDWI', false).getMap();
+        MMRI = autoStretch(ee, MMRI, 'MMRI', false).getMap();
+        pontosMangue = pontosMangue.getMap();
+        classification = classification.getMap();
+        chandra = chandra.getMap({ "opacity": 1, "bands": ["1"], "min": 1, "max": 1, "palette": ["aa0000"] });
 
-    NDVI = autoStretch(ee, NDVI, 'NDVI', false).getMap();
-    NDWI = autoStretch(ee, NDWI, 'NDWI', false).getMap();
-    NDVI_sub_NDWI = autoStretch(ee, NDVI_sub_NDWI, 'NDVI_sub_NDWI', false).getMap();
-    MMRI = autoStretch(ee, MMRI, 'MMRI', false).getMap();
-    pontosMangue = pontosMangue.getMap();
-    classification = classification.getMap();
-    chandra = chandra.getMap({ "opacity": 1, "bands": ["1"], "min": 1, "max": 1, "palette": ["aa0000"] });
-
-    response.send({
-        'Solved': [classification.mapid, classification.token, 'Solved', 0],
-        'Chandra': [chandra.mapid, chandra.token, 'Chandra', 0],
-        'MapBiomas': [mangroveMap.mapid, mangroveMap.token, 'MapBiomas', 1],
-        'NDVI': [NDVI.mapid, NDVI.token, 'NDVI', 0],
-        'NDWI': [NDWI.mapid, NDWI.token, 'NDWI', 0],
-        'NDVI - NDWI': [NDVI_sub_NDWI.mapid, NDVI_sub_NDWI.token, 'NDVI - NDWI', 0],
-        'MMRI': [MMRI.mapid, MMRI.token, 'MMRI', 0],
-        'points': [pontosMangue.mapid, pontosMangue.token, 'Pontos', 0]
-    });
+        response.send({
+            'Solved': [classification.mapid, classification.token, 'Solved', 0],
+            'SEDAC - NASA': [chandra.mapid, chandra.token, 'SEDAC - NASA', 0],
+            'MapBiomas': [mangroveMap.mapid, mangroveMap.token, 'MapBiomas', 1],
+            'NDVI': [NDVI.mapid, NDVI.token, 'NDVI', 0],
+            'NDWI': [NDWI.mapid, NDWI.token, 'NDWI', 0],
+            'NDVI - NDWI': [NDVI_sub_NDWI.mapid, NDVI_sub_NDWI.token, 'NDVI - NDWI', 0],
+            'MMRI': [MMRI.mapid, MMRI.token, 'MMRI', 0],
+            'points': [pontosMangue.mapid, pontosMangue.token, 'Pontos', 0]
+        });
+    } else {
+        response.send({
+            'Solved': ['Solved', 0],
+            'SEDAC - NASA': ['SEDAC - NASA', 0],
+            'MapBiomas': ['MapBiomas', 1],
+            'NDVI': ['NDVI', 0],
+            'NDWI': ['NDWI', 0],
+            'NDVI - NDWI': ['NDVI - NDWI', 0],
+            'MMRI': ['MMRI', 0],
+            'points': ['Pontos', 0]
+        });
+    }
 };
 //By Gilberto Nerino
 function autoStretch(ee, image, bandName, onOff) {

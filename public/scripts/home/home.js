@@ -16,7 +16,8 @@ let marker = null;
 let MapLayers = null;
 let GraphLayer = null;
 let setOnclick = true;
-let selectYear = 2000;
+let selectYear = null;
+let currentSelect = null;
 
 defaultMap.addTo(finalMap);
 addMapLayers(firstYear);
@@ -35,7 +36,7 @@ function addMapLayers(currentYear) {
     $("#TVGraph").modal({ backdrop: 'static', keyboard: false });
     //document.getElementById('chart_div').innerHTML = '<div class="center-block"><span class="fa fa-cog fa-spin"></span> Carregando</div>';
     $.get(platform + 'gee/assetsVisualization/scriptAlfa', 'year=' + (currentYear), function (data) {
-        $("#TVGraph").modal('hide')
+        $("#TVGraph").modal('hide');
         //console.log(data);        
         let keys = Object.keys(data);
         let max = keys.length;
@@ -71,6 +72,7 @@ function addMapLayers(currentYear) {
         }
 
         MapLayers = L.control.layers(null, base, { collapsed: false }).addTo(finalMap);
+        currentSelect = document.getElementById('selectYear');  
 
         $(".rangeOption").each(function (key, elem) {
             $(elem).attr('id', 'rangeOpId_' + key);
@@ -134,8 +136,8 @@ function addMapLayers(currentYear) {
                         GraphLayer = L.control.graph({ position: 'bottomleft' }).addTo(finalMap);
                     }
                     //dragElement(document.getElementById("chartDiv"));
-                    document.getElementById('headerDiv').addEventListener('mousedown', mouseDown, false);
-                    window.addEventListener('mouseup', mouseUp, false);
+                    //document.getElementById('headerDiv').addEventListener('mousedown', mouseDown, false);
+                    //window.addEventListener('mouseup', mouseUp, false);
                     creatGraph(data);
                     $("#TVGraph").modal('hide');
                 });
@@ -230,9 +232,14 @@ function creatGraph(data) {
 }
 
 function savePNG() {
-    let newWindow = window.open();
-    newWindow.document.write("<div id='chart_div' style='width: 900px;'></div>");
-    let chart = new google.visualization.LineChart(newWindow.document.getElementById('chart_div'));
+    let newWindow = window.open().document;
+    let newHead = newWindow.querySelector('head');
+    let newBody = newWindow.querySelector('body');
+
+    newHead.innerHTML += '<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">';
+    newBody.innerHTML += '<div class="container"><div class="row"><div class="col-sm-1"></div><div class="col-sm-10" style="width: 900px;"><div id="chart_div"></div></div><div class="col-sm-1"></div></div></div>';
+    //newWindow.document.write("<div id='chart_div' style='width: 900px;'></div>");
+    let chart = new google.visualization.LineChart(newWindow.getElementById('chart_div'));
     chart.draw(currentGraph, currentOptions);
 }
 
@@ -244,17 +251,19 @@ function changeYear() {
 function htmlOutput(name, op) {
     let output = '';
     output += '<strong>' + name + '</strong>';
-    //output += '<br>'
-    output += '<input class="rangeOption" type="range" min="0" max="1" step="0.01" value="1" style="width: 100%;"/>'
+    if (name != "Pontos") {
+        output += '<input class="rangeOption" type="range" min="0" max="1" step="0.01" value="1" style=""/>';
+    }
     switch (op) {
         case -1:
             return `<strong>${name}</strong>`;
         case 0:
             return output;
         case 1:
-            output += '<br>'
-            output += '<strong>Selecione o ano:</strong>'
-            output += '<select onChange="changeYear()" class="form-control" id="selectYear">'
+            output += '<br>';
+            //output += '<strong>Selecione o ano:</strong>';
+            output += '<div class="input-group" style="margin-top: 16px; margin-bottom: 16px;">'
+            output += '<select onChange="changeYear()" class="form-control" id="selectYear">';
             for (let index = firstYear; index <= lastYear; index++) {
                 if (index == selectYear) {
                     output += `<option value="${index}" selected="true">${index}</option>`;
@@ -263,6 +272,10 @@ function htmlOutput(name, op) {
                 }
             }
             output += '</select>';
+            output += '<div class="input-group-prepend">';
+            output += '<label class="input-group-text" for="selectYear" style="height: 38px;" onclick="showSelectOptions();"><i class="material-icons" style="transform: rotate(180deg);">navigation</i></label>';
+            output += '</div>';
+            output += '</div>'
             return output;
         default:
             return '';
@@ -357,4 +370,12 @@ function tools(currentMap) {
         return new L.Control.Pointer(opts);
     };
     return L.control.Pointer({ position: 'topleft' }).addTo(currentMap);
+}
+
+
+function showSelectOptions() {
+    if (currentSelect != null) {
+        $('#selectYear').trigger('click');
+        console.log('?');
+    }
 }

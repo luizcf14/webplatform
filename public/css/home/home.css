@@ -76,10 +76,20 @@ html, body {
     background: linear-gradient(#C9C9C9, #FFFFFF,#C9C9C9);
 }
 
+select {
+   /* for Firefox */
+   -moz-appearance: none;
+   /* for Chrome */
+   -webkit-appearance: none;
+}
+
 input[type=range] {
     -webkit-appearance: none;
-    width: 100%;
-    margin: 4.5px 0;
+    width: 25%;
+    float: right;
+    margin-left: 10px;
+    margin-top: 10px;
+    /*margin: 4.5px 0;*/
   }
   input[type=range]:focus {
     outline: none;
@@ -247,4 +257,9 @@ input[type=range] {
 .modal-backdrop
 {
  opacity:0 !important;
+}
+
+
+.leaflet-control-layers-overlays{
+  width: 180px;
 }
