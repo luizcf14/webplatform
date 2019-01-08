@@ -72,7 +72,7 @@ function addMapLayers(currentYear) {
         }
 
         MapLayers = L.control.layers(null, base, { collapsed: false }).addTo(finalMap);
-        currentSelect = document.getElementById('selectYear');  
+        currentSelect = document.getElementById('selectYear');
 
         $(".rangeOption").each(function (key, elem) {
             $(elem).attr('id', 'rangeOpId_' + key);
@@ -232,15 +232,18 @@ function creatGraph(data) {
 }
 
 function savePNG() {
-    let newWindow = window.open().document;
+    let win = window.open();
+    let newWindow = win.document;
     let newHead = newWindow.querySelector('head');
     let newBody = newWindow.querySelector('body');
 
     newHead.innerHTML += '<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">';
-    newBody.innerHTML += '<div class="container"><div class="row"><div class="col-sm-1"></div><div class="col-sm-10" style="width: 900px;"><div id="chart_div"></div></div><div class="col-sm-1"></div></div></div>';
+    newBody.innerHTML += `<div class="container"><div class="row"><div class="col-sm-0"></div><div class="col-sm-12" style="width: ${window.innerWidth * 0.8}px; height: ${window.innerHeight * 0.8}px"><div id="chart_div"></div></div><div class="col-sm-0"></div></div></div>`;
     //newWindow.document.write("<div id='chart_div' style='width: 900px;'></div>");
     let chart = new google.visualization.LineChart(newWindow.getElementById('chart_div'));
-    chart.draw(currentGraph, currentOptions);
+    let newOptions = currentOptions;
+    newOptions.height = (window.innerHeight * 0.8);
+    chart.draw(currentGraph, newOptions);    
 }
 
 function changeYear() {
@@ -261,7 +264,7 @@ function htmlOutput(name, op) {
             return output;
         case 1:
             output += '<br>';
-            //output += '<strong>Selecione o ano:</strong>';
+            //output += '<strong>Selecione o ano:</strong>';            
             output += '<div class="input-group" style="margin-top: 16px; margin-bottom: 16px;">'
             output += '<select onChange="changeYear()" class="form-control" id="selectYear">';
             for (let index = firstYear; index <= lastYear; index++) {
@@ -272,9 +275,9 @@ function htmlOutput(name, op) {
                 }
             }
             output += '</select>';
-            output += '<div class="input-group-prepend">';
-            output += '<label class="input-group-text" for="selectYear" style="height: 38px;" onclick="showSelectOptions();"><i class="material-icons" style="transform: rotate(180deg);">navigation</i></label>';
-            output += '</div>';
+            //output += '<div class="input-group-prepend">';
+            //output += '<label class="input-group-text" for="selectYear" style="height: 38px;" onclick="showSelectOptions();"><i class="material-icons" style="transform: rotate(180deg);">navigation</i></label>';
+            //output += '</div>';
             output += '</div>'
             return output;
         default:
@@ -375,7 +378,6 @@ function tools(currentMap) {
 
 function showSelectOptions() {
     if (currentSelect != null) {
-        $('#selectYear').trigger('click');
-        console.log('?');
+
     }
 }

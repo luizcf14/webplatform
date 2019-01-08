@@ -81,6 +81,9 @@ select {
    -moz-appearance: none;
    /* for Chrome */
    -webkit-appearance: none;
+   padding: 5px;
+   background: url(../../imgs/nav_20.png) no-repeat right;
+   background-position-x: 95%;
 }
 
 input[type=range] {
@@ -253,12 +256,12 @@ input[type=range] {
     transform: rotate(360deg);
   }
 }
+
 /*Modal transparence*/
 .modal-backdrop
 {
  opacity:0 !important;
 }
-
 
 .leaflet-control-layers-overlays{
   width: 180px;
