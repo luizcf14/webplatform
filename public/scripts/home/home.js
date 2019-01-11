@@ -4,13 +4,8 @@ let platform = '';
 let firstYear = 2000;
 let lastYear = 2017;
 
-let defaultMap = L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
-    maxZoom: 18,
-    id: 'mapbox.streets',
-    accessToken: 'pk.eyJ1IjoiY2FkYXN0cm9zZGl2ZXJzb3MiLCJhIjoiY2pqOTNuNXY3MmwzaDNxcjU2YTVraGxvNyJ9.2Lv4RwCJl79HhlO-cuDcHQ'
-});//.addTo(mymap);
-
-let finalMap = L.map('mapid', { center: [-1.464261, -48.470320], zoom: 5, layers: [defaultMap] });
+let defaultMap = null;
+let finalMap = null;
 
 let marker = null;
 let MapLayers = null;
@@ -19,8 +14,23 @@ let setOnclick = true;
 let selectYear = null;
 let currentSelect = null;
 
-defaultMap.addTo(finalMap);
-addMapLayers(firstYear);
+function initMap(mapType) {
+    defaultMap = L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
+        maxZoom: 18,
+        id: mapType,
+        accessToken: 'pk.eyJ1IjoiY2FkYXN0cm9zZGl2ZXJzb3MiLCJhIjoiY2pqOTNuNXY3MmwzaDNxcjU2YTVraGxvNyJ9.2Lv4RwCJl79HhlO-cuDcHQ'
+    });
+    finalMap = L.map('mapid', { center: [-1.464261, -48.470320], zoom: 5, layers: [defaultMap] });
+    marker = null;
+    MapLayers = null;
+    GraphLayer = null;
+    setOnclick = true;
+    selectYear = null;
+    currentSelect = null;
+    defaultMap.addTo(finalMap);
+    addMapLayers(firstYear);
+}
+
 function addMapLayers(currentYear) {
     if (MapLayers != null) {
         //console.log(defaultMap);
@@ -33,10 +43,11 @@ function addMapLayers(currentYear) {
         MapLayers.remove();
     }
     tools(finalMap);
+    animatorBlur();
     $("#TVGraph").modal({ backdrop: 'static', keyboard: false });
     //document.getElementById('chart_div').innerHTML = '<div class="center-block"><span class="fa fa-cog fa-spin"></span> Carregando</div>';
     $.get(platform + 'gee/assetsVisualization/scriptAlfa', 'year=' + (currentYear), function (data) {
-        $("#TVGraph").modal('hide');
+
         //console.log(data);        
         let keys = Object.keys(data);
         let max = keys.length;
@@ -70,9 +81,26 @@ function addMapLayers(currentYear) {
                 base[htmlOutput('Pontos de amostra', -1)] = L.layerGroup(pointsList);
             }
         }
-
+        animatorNonBlur();
+        $("#TVGraph").modal('hide');
+        $('#navTop').removeClass('blur-me')
         MapLayers = L.control.layers(null, base, { collapsed: false }).addTo(finalMap);
+
+        let topOptions = document.querySelector(".leaflet-control-layers-overlays");
+        let opDiv = document.createElement('div');
+        let layerImg = document.createElement('img');
+
+        opDiv.style.marginTop = '5px';
+        opDiv.style.marginBottom = '5px';
+        layerImg.src = '../../imgs/layers-icon.png';
+        configOptions(layerImg);
+        opDiv.appendChild(layerImg);
+        topOptions.prepend(opDiv);
+
         currentSelect = document.getElementById('selectYear');
+        $(function () {
+            $('[data-toggle="popover"]').popover({ html: true });
+        });
 
         $(".rangeOption").each(function (key, elem) {
             $(elem).attr('id', 'rangeOpId_' + key);
@@ -146,7 +174,7 @@ function addMapLayers(currentYear) {
         finalMap.on('click', onMapClick);
     });
 }
-
+initMap('mapbox.streets');
 let currentChart = null;
 let currentGraph = null;
 let currentOptions = null;
@@ -243,7 +271,7 @@ function savePNG() {
     let chart = new google.visualization.LineChart(newWindow.getElementById('chart_div'));
     let newOptions = currentOptions;
     newOptions.height = (window.innerHeight * 0.8);
-    chart.draw(currentGraph, newOptions);    
+    chart.draw(currentGraph, newOptions);
 }
 
 function changeYear() {
@@ -253,6 +281,7 @@ function changeYear() {
 
 function htmlOutput(name, op) {
     let output = '';
+    let topOptions = document.querySelector(".leaflet-control-layers-overlays");
     output += '<strong>' + name + '</strong>';
     if (name != "Pontos") {
         output += '<input class="rangeOption" type="range" min="0" max="1" step="0.01" value="1" style=""/>';
@@ -375,6 +404,65 @@ function tools(currentMap) {
     return L.control.Pointer({ position: 'topleft' }).addTo(currentMap);
 }
 
+function configOptions(layerImg) {
+    layerImg.setAttribute('data-toggle', 'popover');
+    layerImg.title = 'Configurações de exibição';
+    layerImg.setAttribute('data-content',
+        '<strong>Tipos de Mapa</strong>' +
+        '<form>' +
+        '<div class="form-group">' +
+        '<div class="form-check">' +
+        '<input class="form-check-input" type="radio" name="exampleRadios" id="op_1" value="op_1" checked>' +
+        '<label class="form-check-label" for="op_1" style="margin-left: 5px;">Mapbox - Ruas</label>' +
+        '</div>' +
+        '<div class="form-check">' +
+        '<input class="form-check-input" type="radio" name="exampleRadios" id="op_1" value="op_1">' +
+        '<label class="form-check-label" for="op_1" style="margin-left: 5px;">Mapbox - Satélite</label>' +
+        '</div>' +
+        '</div>' +
+        '</form>'
+    );
+    layerImg.style.width = '22px';
+}
+
+//By Luiz Gay
+function animatorBlur() {
+    $({ blurRadius: 0 }).animate({ blurRadius: 100 }, {
+        duration: 1100,
+        easing: 'swing', // or "linear"
+        // use jQuery UI or Easing plugin for more options
+        step: function () {
+            //console.log(this.blurRadius);
+            $('#container').css({
+                "-webkit-filter": "blur(" + this.blurRadius + "px)",
+                "filter": "blur(" + this.blurRadius + "px)"
+            });
+            $('#navTop').css({
+                "-webkit-filter": "blur(" + this.blurRadius + "px)",
+                "filter": "blur(" + this.blurRadius + "px)"
+            });
+
+        }
+    });
+};
+
+function animatorNonBlur() {
+    $({ blurRadius: 100 }).animate({ blurRadius: 0 }, {
+        duration: 500,
+        easing: 'swing', // or "linear"
+        // use jQuery UI or Easing plugin for more options
+        step: function () {
+            $('#container').css({
+                "-webkit-filter": "blur(" + this.blurRadius + "px)",
+                "filter": "blur(" + this.blurRadius + "px)"
+            });
+            $('#navTop').css({
+                "-webkit-filter": "blur(" + this.blurRadius + "px)",
+                "filter": "blur(" + this.blurRadius + "px)"
+            });
+        }
+    });
+};
 
 function showSelectOptions() {
     if (currentSelect != null) {

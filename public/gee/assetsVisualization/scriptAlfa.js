@@ -43,10 +43,10 @@
         var NDVI_sub_NDWI = NDWI.subtract(NDVI).rename('NDVI_sub_NDWI');
         var MMRI = image.select('MMRI');
 
-        NDVI = autoStretch(ee, NDVI, 'NDVI', false).getMap();
-        NDWI = autoStretch(ee, NDWI, 'NDWI', false).getMap();
-        NDVI_sub_NDWI = autoStretch(ee, NDVI_sub_NDWI, 'NDVI_sub_NDWI', false).getMap();
-        MMRI = autoStretch(ee, MMRI, 'MMRI', false).getMap();
+        NDVI = autoStretch(ee, NDVI, 'NDVI', false,50,180).getMap();
+        NDWI = autoStretch(ee, NDWI, 'NDWI', false,20,180).getMap();
+        NDVI_sub_NDWI = autoStretch(ee, NDVI_sub_NDWI, 'NDVI_sub_NDWI', false,-225,235).getMap();
+        MMRI = autoStretch(ee, MMRI, 'MMRI', false,20,200).getMap();
         pontosMangue = pontosMangue.getMap();
         classification = classification.getMap();
         chandra = chandra.getMap({ "opacity": 1, "bands": ["1"], "min": 1, "max": 1, "palette": ["aa0000"] });
@@ -75,16 +75,21 @@
     }
 };
 //By Gilberto Nerino
-function autoStretch(ee, image, bandName, onOff) {
+function autoStretch(ee, image, bandName, onOff,min,max) {
+
     if (onOff) {
         var minMax = image.reduceRegion({
-            reducer: ee.Reducer.percentile([1, 95]),
-            maxPixels: 1e12,
-            scale: 30
+            reducer: ee.Reducer.minMax(),
+            maxPixels: 1e13,
+            geometry : ee.Image(image).geometry().bounds(),
+            scale: 60
         });
-        image = image.visualize({ min: minMax.get(bandName + "_p1"), max: minMax.get(bandName + "_p95") });
+
+        console.log(minMax.getInfo())
+        image = image.visualize({ min: minMax.get(bandName+'_min'), max: minMax.get(bandName+'_max') });
         return image;
     } else {
+        image = image.visualize({ min: min, max: max });
         return image;
     }
 };
