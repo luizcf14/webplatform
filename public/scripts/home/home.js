@@ -14,21 +14,46 @@ let setOnclick = true;
 let selectYear = null;
 let currentSelect = null;
 
+let base = {};
+let layersValues = [];
+let proccess = true;
+let currentTools = null;
+
 function initMap(mapType) {
+    let centerValues;
+    let zoomValue;
+
+    if (defaultMap == null && finalMap == null) {
+        centerValues = [-1.464261, -48.470320];
+        zoomValue = 5;
+    } else {
+        //$('#element').popover('dispose');
+        centerValues = finalMap.getCenter();
+        zoomValue = finalMap.getZoom();
+        finalMap.remove();
+        proccess = false;
+    }
     defaultMap = L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
         maxZoom: 18,
         id: mapType,
         accessToken: 'pk.eyJ1IjoiY2FkYXN0cm9zZGl2ZXJzb3MiLCJhIjoiY2pqOTNuNXY3MmwzaDNxcjU2YTVraGxvNyJ9.2Lv4RwCJl79HhlO-cuDcHQ'
     });
-    finalMap = L.map('mapid', { center: [-1.464261, -48.470320], zoom: 5, layers: [defaultMap] });
-    marker = null;
-    MapLayers = null;
-    GraphLayer = null;
-    setOnclick = true;
-    selectYear = null;
-    currentSelect = null;
-    defaultMap.addTo(finalMap);
-    addMapLayers(firstYear);
+    finalMap = L.map('mapid', { center: centerValues, zoom: zoomValue, layers: [defaultMap] });
+
+    //marker = null;
+    //MapLayers = null;
+    //GraphLayer = null;
+    //setOnclick = true;
+    //selectYear = null;
+    //currentSelect = null;
+    if (proccess) {
+        defaultMap.addTo(finalMap);
+        addMapLayers(firstYear);
+    }else{
+        //layers();
+        MapLayers.addTo(finalMap);
+        tools(finalMap);
+    }
 }
 
 function addMapLayers(currentYear) {
@@ -42,7 +67,7 @@ function addMapLayers(currentYear) {
         finalMap = L.map('mapid', { center: centerValues, zoom: zoomValue, layers: [defaultMap] });
         MapLayers.remove();
     }
-    tools(finalMap);
+    currentTools = tools(finalMap);
     animatorBlur();
     $("#TVGraph").modal({ backdrop: 'static', keyboard: false });
     //document.getElementById('chart_div').innerHTML = '<div class="center-block"><span class="fa fa-cog fa-spin"></span> Carregando</div>';
@@ -51,8 +76,9 @@ function addMapLayers(currentYear) {
         //console.log(data);        
         let keys = Object.keys(data);
         let max = keys.length;
-        let layersValues = [max];
-        let base = {};
+        layersValues = null;
+        layersValues = [max];
+        base = {};
         //console.log('Keys', keys);
         for (let index = 0; index < max; index++) {
             if (keys[index] != "points_postgis") {
@@ -83,97 +109,101 @@ function addMapLayers(currentYear) {
         }
         animatorNonBlur();
         $("#TVGraph").modal('hide');
-        $('#navTop').removeClass('blur-me')
-        MapLayers = L.control.layers(null, base, { collapsed: false }).addTo(finalMap);
-
-        let topOptions = document.querySelector(".leaflet-control-layers-overlays");
-        let opDiv = document.createElement('div');
-        let layerImg = document.createElement('img');
-
-        opDiv.style.marginTop = '5px';
-        opDiv.style.marginBottom = '5px';
-        layerImg.src = '../../imgs/layers-icon.png';
-        configOptions(layerImg);
-        opDiv.appendChild(layerImg);
-        topOptions.prepend(opDiv);
-
-        currentSelect = document.getElementById('selectYear');
-        $(function () {
-            $('[data-toggle="popover"]').popover({ html: true });
-        });
-
-        $(".rangeOption").each(function (key, elem) {
-            $(elem).attr('id', 'rangeOpId_' + key);
-            $("#rangeOpId_" + key).on("input change", function () {
-                layersValues[key].setOpacity(this.value);
-            });
-        });
-
-        function onMapClick(e) {
-            //popup.setLatLng(e.latlng).setContent("Carregando!").openOn(finalMap);
-            //$("#TVGraph").modal();
-            //document.getElementById('chart_div').innerHTML = '<div class="center-block"><span class="fa fa-cog fa-spin"></span> Carregando</div>';
-            //$("#saveGraphPNG").attr('class', 'modal-footer d-none');
-            if ($('.leaflet-container').css('cursor') === 'crosshair') {
-                $('.leaflet-container').css('cursor', '');
-                if (marker === null) {
-                    marker = L.marker([e.latlng.lat, e.latlng.lng]).addTo(finalMap);
-                } else {
-                    marker.remove();
-                    marker = L.marker([e.latlng.lat, e.latlng.lng]).addTo(finalMap);
-                }
-                $("#TVGraph").modal({ backdrop: 'static', keyboard: false });
-                $.get(platform + 'gee/temporalVisualization/pixelVariation', 'lat=' + (e.latlng.lat) + '&lon=' + (e.latlng.lng), function (data) {
-                    L.Control.Graph = L.Control.extend({
-                        onAdd: function (map) {
-
-                            var main_div = L.DomUtil.create('div', '');
-                            var chart_div = L.DomUtil.create('div', '', main_div);
-                            var header_div = L.DomUtil.create('div', 'text-right');
-                            var header_maximize = L.DomUtil.create('i', 'material-icons');
-                            var header_close = L.DomUtil.create('i', 'material-icons');
-                            var sub_div = L.DomUtil.create('div', '');
-
-                            chart_div.id = 'chartDiv';
-                            header_div.id = 'headerDiv';
-                            header_maximize.id = 'headerMaximize';
-                            header_close.id = 'headerClose';
-                            sub_div.id = 'chart_div';
-
-                            header_div.appendChild(header_maximize);
-                            header_div.appendChild(header_close);
-                            chart_div.appendChild(header_div);
-                            chart_div.appendChild(sub_div);
-
-                            L.DomEvent.disableClickPropagation(main_div);
-                            L.DomEvent.disableClickPropagation(chart_div);
-                            L.DomEvent.disableClickPropagation(header_div);
-                            L.DomEvent.disableClickPropagation(sub_div);
-                            return chart_div;
-                        },
-                        onRemove: function (map) {
-                        }
-                    });
-                    L.control.graph = function (opts) {
-                        return new L.Control.Graph(opts);
-                    }
-                    if (GraphLayer === null) {
-                        GraphLayer = L.control.graph({ position: 'bottomleft' }).addTo(finalMap);
-                    } else {
-                        GraphLayer.remove();
-                        GraphLayer = L.control.graph({ position: 'bottomleft' }).addTo(finalMap);
-                    }
-                    //dragElement(document.getElementById("chartDiv"));
-                    //document.getElementById('headerDiv').addEventListener('mousedown', mouseDown, false);
-                    //window.addEventListener('mouseup', mouseUp, false);
-                    creatGraph(data);
-                    $("#TVGraph").modal('hide');
-                });
-            }
-        }
-        finalMap.on('click', onMapClick);
+        $('#navTop').removeClass('blur-me');
+        layers();
     });
 }
+function layers() {
+    MapLayers = L.control.layers(null, base, { collapsed: false }).addTo(finalMap);
+
+    let topOptions = document.querySelector(".leaflet-control-layers-overlays");
+    let opDiv = document.createElement('div');
+    let layerImg = document.createElement('img');
+
+    opDiv.style.marginTop = '5px';
+    opDiv.style.marginBottom = '5px';
+    layerImg.src = '../../imgs/layers-icon.png';
+    layerImg.style.cursor = 'pointer';
+    configOptions(layerImg);
+    opDiv.appendChild(layerImg);
+    topOptions.prepend(opDiv);
+
+    $(function () {
+        $('[data-toggle="popover"]').popover({ html: true });
+    });
+
+    $(".rangeOption").each(function (key, elem) {
+        $(elem).attr('id', 'rangeOpId_' + key);
+        $("#rangeOpId_" + key).on("input change", function () {
+            layersValues[key].setOpacity(this.value);
+        });
+    });
+
+    function onMapClick(e) {
+        //popup.setLatLng(e.latlng).setContent("Carregando!").openOn(finalMap);
+        //$("#TVGraph").modal();
+        //document.getElementById('chart_div').innerHTML = '<div class="center-block"><span class="fa fa-cog fa-spin"></span> Carregando</div>';
+        //$("#saveGraphPNG").attr('class', 'modal-footer d-none');
+        if ($('.leaflet-container').css('cursor') === 'crosshair') {
+            $('.leaflet-container').css('cursor', '');
+            if (marker === null) {
+                marker = L.marker([e.latlng.lat, e.latlng.lng]).addTo(finalMap);
+            } else {
+                marker.remove();
+                marker = L.marker([e.latlng.lat, e.latlng.lng]).addTo(finalMap);
+            }
+            $("#TVGraph").modal({ backdrop: 'static', keyboard: false });
+            $.get(platform + 'gee/temporalVisualization/pixelVariation', 'lat=' + (e.latlng.lat) + '&lon=' + (e.latlng.lng), function (data) {
+                L.Control.Graph = L.Control.extend({
+                    onAdd: function (map) {
+
+                        var main_div = L.DomUtil.create('div', '');
+                        var chart_div = L.DomUtil.create('div', '', main_div);
+                        var header_div = L.DomUtil.create('div', 'text-right');
+                        var header_maximize = L.DomUtil.create('i', 'material-icons');
+                        var header_close = L.DomUtil.create('i', 'material-icons');
+                        var sub_div = L.DomUtil.create('div', '');
+
+                        chart_div.id = 'chartDiv';
+                        header_div.id = 'headerDiv';
+                        header_maximize.id = 'headerMaximize';
+                        header_close.id = 'headerClose';
+                        sub_div.id = 'chart_div';
+
+                        header_div.appendChild(header_maximize);
+                        header_div.appendChild(header_close);
+                        chart_div.appendChild(header_div);
+                        chart_div.appendChild(sub_div);
+
+                        L.DomEvent.disableClickPropagation(main_div);
+                        L.DomEvent.disableClickPropagation(chart_div);
+                        L.DomEvent.disableClickPropagation(header_div);
+                        L.DomEvent.disableClickPropagation(sub_div);
+                        return chart_div;
+                    },
+                    onRemove: function (map) {
+                    }
+                });
+                L.control.graph = function (opts) {
+                    return new L.Control.Graph(opts);
+                }
+                if (GraphLayer === null) {
+                    GraphLayer = L.control.graph({ position: 'bottomleft' }).addTo(finalMap);
+                } else {
+                    GraphLayer.remove();
+                    GraphLayer = L.control.graph({ position: 'bottomleft' }).addTo(finalMap);
+                }
+                //dragElement(document.getElementById("chartDiv"));
+                //document.getElementById('headerDiv').addEventListener('mousedown', mouseDown, false);
+                //window.addEventListener('mouseup', mouseUp, false);
+                creatGraph(data);
+                $("#TVGraph").modal('hide');
+            });
+        }
+    }
+    finalMap.on('click', onMapClick);
+}
+
 initMap('mapbox.streets');
 let currentChart = null;
 let currentGraph = null;
@@ -386,11 +416,23 @@ function tools(currentMap) {
             var main_div = L.DomUtil.create('div');
             var sub_div = L.DomUtil.create('div', 'leaflet-bar', main_div);
             sub_div.style.backgroundColor = 'white';
-            var text = L.DomUtil.create('i', 'material-icons', sub_div);
-            text.style.cursor = 'pointer';
-            text.style.padding = '5px 3px 5px 3px';
-            text.innerHTML = 'location_on';
-            text.onclick = () => {
+            var grab = L.DomUtil.create('i', 'material-icons', sub_div);
+            var pointer = L.DomUtil.create('i', 'material-icons', sub_div);
+
+            grab.style.cursor = 'pointer';
+            grab.style.padding = '5px 3px 5px 3px';//css
+            grab.style.borderRightWidth = '1px';//css
+            grab.style.borderRightStyle = 'solid';//css
+            grab.style.borderRightColor = 'rgb(204, 204, 204)';//css
+            grab.innerHTML = 'pan_tool';
+            grab.onclick = () => {
+                $('.leaflet-container').css('cursor', '');
+            };
+
+            pointer.style.cursor = 'pointer';
+            pointer.style.padding = '5px 3px 5px 3px';//css
+            pointer.innerHTML = 'location_on';
+            pointer.onclick = () => {
                 $('.leaflet-container').css('cursor', 'crosshair');
             };
             L.DomEvent.disableClickPropagation(sub_div);
@@ -412,12 +454,12 @@ function configOptions(layerImg) {
         '<form>' +
         '<div class="form-group">' +
         '<div class="form-check">' +
-        '<input class="form-check-input" type="radio" name="exampleRadios" id="op_1" value="op_1" checked>' +
-        '<label class="form-check-label" for="op_1" style="margin-left: 5px;">Mapbox - Ruas</label>' +
+        '<input class="form-check-input" type="radio" name="mapType" id="op_1" value="mapbox.streets" checked onclick="initMap(this.value)">' +
+        '<label class="form-check-label" style="margin-left: 5px;">Mapbox - Ruas</label>' +
         '</div>' +
         '<div class="form-check">' +
-        '<input class="form-check-input" type="radio" name="exampleRadios" id="op_1" value="op_1">' +
-        '<label class="form-check-label" for="op_1" style="margin-left: 5px;">Mapbox - Satélite</label>' +
+        '<input class="form-check-input" type="radio" name="mapType" id="op_2" value="mapbox.satellite" onclick="initMap(this.value)">' +
+        '<label class="form-check-label" style="margin-left: 5px;">Mapbox - Satélite</label>' +
         '</div>' +
         '</div>' +
         '</form>'
@@ -463,9 +505,3 @@ function animatorNonBlur() {
         }
     });
 };
-
-function showSelectOptions() {
-    if (currentSelect != null) {
-
-    }
-}
