@@ -18,6 +18,7 @@ let base = {};
 let layersValues = [];
 let proccess = true;
 let currentTools = null;
+let opDiv = null;
 
 function initMap(mapType) {
     let centerValues;
@@ -34,7 +35,7 @@ function initMap(mapType) {
         proccess = false;
     }
     defaultMap = L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
-        maxZoom: 18,
+        maxZoom: 20,
         id: mapType,
         accessToken: 'pk.eyJ1IjoiY2FkYXN0cm9zZGl2ZXJzb3MiLCJhIjoiY2pqOTNuNXY3MmwzaDNxcjU2YTVraGxvNyJ9.2Lv4RwCJl79HhlO-cuDcHQ'
     });
@@ -49,10 +50,12 @@ function initMap(mapType) {
     if (proccess) {
         defaultMap.addTo(finalMap);
         addMapLayers(firstYear);
-    }else{
+    } else {
         //layers();
         MapLayers.addTo(finalMap);
         tools(finalMap);
+        initPopover();
+        initMapClick();
     }
 }
 
@@ -67,9 +70,9 @@ function addMapLayers(currentYear) {
         finalMap = L.map('mapid', { center: centerValues, zoom: zoomValue, layers: [defaultMap] });
         MapLayers.remove();
     }
-    currentTools = tools(finalMap);
+    currentTools = tools(finalMap);    
     animatorBlur();
-    $("#TVGraph").modal({ backdrop: 'static', keyboard: false });
+    $("#TVGraph").modal({ backdrop: 'static', keyboard: false });    
     //document.getElementById('chart_div').innerHTML = '<div class="center-block"><span class="fa fa-cog fa-spin"></span> Carregando</div>';
     $.get(platform + 'gee/assetsVisualization/scriptAlfa', 'year=' + (currentYear), function (data) {
 
@@ -110,35 +113,42 @@ function addMapLayers(currentYear) {
         animatorNonBlur();
         $("#TVGraph").modal('hide');
         $('#navTop').removeClass('blur-me');
-        layers();
+
+        MapLayers = L.control.layers(null, base, { collapsed: false }).addTo(finalMap);
+
+        initPopover();
+
+        $(".rangeOption").each(function (key, elem) {
+            $(elem).attr('id', 'rangeOpId_' + key);
+            $("#rangeOpId_" + key).on("input change", function () {
+                layersValues[key].setOpacity(this.value);
+            });
+        });
+
+        initMapClick();
     });
 }
-function layers() {
-    MapLayers = L.control.layers(null, base, { collapsed: false }).addTo(finalMap);
 
+function initPopover() {
     let topOptions = document.querySelector(".leaflet-control-layers-overlays");
-    let opDiv = document.createElement('div');
-    let layerImg = document.createElement('img');
+    if (opDiv === null) {
+        opDiv = document.createElement('div');
+        let layerImg = document.createElement('img');
 
-    opDiv.style.marginTop = '5px';
-    opDiv.style.marginBottom = '5px';
-    layerImg.src = '../../imgs/layers-icon.png';
-    layerImg.style.cursor = 'pointer';
-    configOptions(layerImg);
-    opDiv.appendChild(layerImg);
+        opDiv.style.marginTop = '5px';
+        opDiv.style.marginBottom = '5px';
+        layerImg.src = '../../imgs/layers-icon.png';
+        layerImg.style.cursor = 'pointer';
+        configOptions(layerImg);
+        opDiv.appendChild(layerImg);
+    }
     topOptions.prepend(opDiv);
-
     $(function () {
         $('[data-toggle="popover"]').popover({ html: true });
     });
+}
 
-    $(".rangeOption").each(function (key, elem) {
-        $(elem).attr('id', 'rangeOpId_' + key);
-        $("#rangeOpId_" + key).on("input change", function () {
-            layersValues[key].setOpacity(this.value);
-        });
-    });
-
+function initMapClick() {
     function onMapClick(e) {
         //popup.setLatLng(e.latlng).setContent("Carregando!").openOn(finalMap);
         //$("#TVGraph").modal();
@@ -305,6 +315,7 @@ function savePNG() {
 }
 
 function changeYear() {
+    $('.popover').popover('hide');
     selectYear = $("#selectYear").val();
     addMapLayers($("#selectYear").val());
 }
@@ -416,25 +427,33 @@ function tools(currentMap) {
             var main_div = L.DomUtil.create('div');
             var sub_div = L.DomUtil.create('div', 'leaflet-bar', main_div);
             sub_div.style.backgroundColor = 'white';
-            var grab = L.DomUtil.create('i', 'material-icons', sub_div);
-            var pointer = L.DomUtil.create('i', 'material-icons', sub_div);
+            var grab = L.DomUtil.create('i', 'material-icons tool_child', sub_div);
+            var pointer = L.DomUtil.create('i', 'material-icons tool_child', sub_div);
+            var show_chart = L.DomUtil.create('i', 'material-icons tool_child', sub_div);
+            var insert_chart = L.DomUtil.create('i', 'material-icons tool_last_child', sub_div);
 
             grab.style.cursor = 'pointer';
-            grab.style.padding = '5px 3px 5px 3px';//css
-            grab.style.borderRightWidth = '1px';//css
-            grab.style.borderRightStyle = 'solid';//css
-            grab.style.borderRightColor = 'rgb(204, 204, 204)';//css
+            grab.setAttribute('title', 'Padrão');
             grab.innerHTML = 'pan_tool';
             grab.onclick = () => {
                 $('.leaflet-container').css('cursor', '');
             };
 
             pointer.style.cursor = 'pointer';
-            pointer.style.padding = '5px 3px 5px 3px';//css
+            pointer.setAttribute('title', 'Adicionar pontos');
             pointer.innerHTML = 'location_on';
             pointer.onclick = () => {
                 $('.leaflet-container').css('cursor', 'crosshair');
             };
+
+            show_chart.id = "show";
+            show_chart.style.cursor = 'pointer';
+            show_chart.setAttribute('title', 'Desenhar forma');
+            show_chart.innerHTML = 'show_chart';
+
+            insert_chart.style.cursor = 'pointer';
+            insert_chart.setAttribute('title', 'Gerar gráfico');
+            insert_chart.innerHTML = 'insert_chart';
             L.DomEvent.disableClickPropagation(sub_div);
             return sub_div;
         },

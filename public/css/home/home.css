@@ -272,6 +272,18 @@ input[type=range]:focus::-ms-fill-upper {
   }
 }
 
+.tool_child 
+{
+  padding : 5px 3px 5px 3px;
+  border-right-width : 1px;
+  border-right-style : solid;
+  border-right-color : rgb(204, 204, 204);
+}
+
+.tool_last_child
+{
+  padding : 5px 3px 5px 3px;
+}
 /*Modal transparence*/
 .modal-backdrop
 {
