@@ -2,6 +2,7 @@
 let path = require('path');
 let publicPath;
 let geeFunction;
+let sqlFunctions;
 let pth;
 
 function defaultRoute(app, route, view) {
@@ -32,6 +33,13 @@ function geeTemporalVisualization(app, ee) {
     });
 };
 
+function postgisFunctions(app, db) {
+    app.get(pth + '/postgis/sqlFunctions', function (request, response) { 
+        sqlFunctions = require(publicPath + path.sep + 'postgis' + path.sep + 'sqlFunctions.js');
+        sqlFunctions.run(request, response, db);
+    });
+};
+
 let router = function (app, ee, public, isLocal, db) {
     //pth = isLocal ? '' : '/';
     pth = '';
@@ -40,10 +48,10 @@ let router = function (app, ee, public, isLocal, db) {
 
     geeAlfa(app, ee, db);
     geeTemporalVisualization(app, ee);
-
+    postgisFunctions(app, db);
     //defaultRoute(app, '*', ' pageNotFound/404.ejs');
     publicPath = public + path.sep + 'public';
-    console.log('Sistema de rotas iniciado com sucesso.', publicPath);    
+    console.log('Sistema de rotas iniciado com sucesso.', publicPath);
 };
 
 module.exports = {

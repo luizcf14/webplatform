@@ -70,9 +70,9 @@ function addMapLayers(currentYear) {
         finalMap = L.map('mapid', { center: centerValues, zoom: zoomValue, layers: [defaultMap] });
         MapLayers.remove();
     }
-    currentTools = tools(finalMap);    
+    currentTools = tools(finalMap);
     animatorBlur();
-    $("#TVGraph").modal({ backdrop: 'static', keyboard: false });    
+    $("#TVGraph").modal({ backdrop: 'static', keyboard: false });
     //document.getElementById('chart_div').innerHTML = '<div class="center-block"><span class="fa fa-cog fa-spin"></span> Carregando</div>';
     $.get(platform + 'gee/assetsVisualization/scriptAlfa', 'year=' + (currentYear), function (data) {
 
@@ -481,6 +481,14 @@ function configOptions(layerImg) {
         '<label class="form-check-label" style="margin-left: 5px;">Mapbox - Satélite</label>' +
         '</div>' +
         '</div>' +
+        '</form>' +
+        '<strong>Camadas de Sobreposição</strong>' +
+        '<form>' +
+        '<div class="form-group">' +
+        '<div class="form-check">' +
+        '<input class="form-check-input" type="checkbox" style="-webkit-appearance: checkbox !important;" onchange="getCities(this)">' +
+        '<label class="form-check-label" style="margin-left: 5px;">Municípios</label>' +
+        '</div>' +
         '</form>'
     );
     layerImg.style.width = '22px';
@@ -524,3 +532,20 @@ function animatorNonBlur() {
         }
     });
 };
+
+function getCities(checkbox) {
+    if (checkbox.checked) {
+        $.get('/postgis/sqlFunctions', function (data) {
+            switch(data.code){
+                case 0:
+                    console.log(data.result[0]);
+                    L.geoJSON(data.result[0]).addTo(finalMap);
+                    break;
+                case 1:
+                    break;
+                default:
+                    console.log('Erro desconhecido.');
+            }
+        });
+    }
+}
