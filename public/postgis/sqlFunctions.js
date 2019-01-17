@@ -1,6 +1,6 @@
 exports.run = function (request, response, db) {
-    let mainQuery = 'select (ST_AsGeoJSON(geom)) from mangroveinfo limit(1)';
-    db.sql_query(mainQuery).then((success) => {
+    let mainQuery = "select (ST_AsGeoJSON(geom)) from mangroveinfo" //where (city = 'Belém' and state = 'Pará')"// or (city = 'Altamira' and state = 'Pará')";
+    db.sql_query(mainQuery).then((success) => {        
         response.send({
             'code': 0,/*Its works code.*/
             'result': success.rows

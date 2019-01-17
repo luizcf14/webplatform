@@ -20,6 +20,10 @@ let proccess = true;
 let currentTools = null;
 let opDiv = null;
 
+let checkboxList = [];
+let rangeValues = [];
+let geometries = [];
+
 function initMap(mapType) {
     let centerValues;
     let zoomValue;
@@ -29,6 +33,9 @@ function initMap(mapType) {
         zoomValue = 5;
     } else {
         //$('#element').popover('dispose');
+        checkboxList = $('.leaflet-top.leaflet-right input[type="checkbox"]').toArray();
+        rangeValues = $('.rangeOption').toArray();
+
         centerValues = finalMap.getCenter();
         zoomValue = finalMap.getZoom();
         finalMap.remove();
@@ -53,9 +60,30 @@ function initMap(mapType) {
     } else {
         //layers();
         MapLayers.addTo(finalMap);
+        activeLayers();
         tools(finalMap);
         initPopover();
+        initRangeOption();
+        currentRangeValues();
         initMapClick();
+    }
+}
+
+function activeLayers() {
+    let currentCheckboxList = $('.leaflet-top.leaflet-right input[type="checkbox"]').toArray();
+    let size = currentCheckboxList.length;
+    for (let index = 0; index < size; index++) {
+        if (checkboxList[index].checked) {
+            currentCheckboxList[index].click();
+        }
+    }
+}
+
+function currentRangeValues() {
+    let currentRangeList = $('.rangeOption').toArray();
+    let size = currentRangeList.length;
+    for (let index = 0; index < size; index++) {
+        currentRangeList[index].value = rangeValues[index].value;
     }
 }
 
@@ -118,12 +146,7 @@ function addMapLayers(currentYear) {
 
         initPopover();
 
-        $(".rangeOption").each(function (key, elem) {
-            $(elem).attr('id', 'rangeOpId_' + key);
-            $("#rangeOpId_" + key).on("input change", function () {
-                layersValues[key].setOpacity(this.value);
-            });
-        });
+        initRangeOption();
 
         initMapClick();
     });
@@ -214,6 +237,14 @@ function initMapClick() {
     finalMap.on('click', onMapClick);
 }
 
+function initRangeOption() {
+    $(".rangeOption").each(function (key, elem) {
+        $(elem).attr('id', 'rangeOpId_' + key);
+        $("#rangeOpId_" + key).on("input change", function () {
+            layersValues[key].setOpacity(this.value);
+        });
+    });
+}
 initMap('mapbox.streets');
 let currentChart = null;
 let currentGraph = null;
@@ -320,6 +351,9 @@ function changeYear() {
     addMapLayers($("#selectYear").val());
 }
 
+function removeDefaultClickEvent(event) {
+    event.preventDefault();
+}
 function htmlOutput(name, op) {
     let output = '';
     let topOptions = document.querySelector(".leaflet-control-layers-overlays");
@@ -533,19 +567,32 @@ function animatorNonBlur() {
     });
 };
 
+
 function getCities(checkbox) {
+
+    let geoJSON = { "type": "Feature", "geometry": { "type": null, "coordinates": null } };
+    let geoStyle = { "color": "#ff7800", "weight": 1, "opacity": 0.65 };
+    console.log(checkbox.checked);
     if (checkbox.checked) {
         $.get('/postgis/sqlFunctions', function (data) {
-            switch(data.code){
+            switch (data.code) {
                 case 0:
-                    console.log(data.result[0]);
-                    L.geoJSON(data.result[0]).addTo(finalMap);
+                    data.result.forEach(result => {
+                        let info = JSON.parse(result.st_asgeojson);
+                        geoJSON.geometry.type = info.type;
+                        geoJSON.geometry.coordinates = info.coordinates;
+                        geometries.push(L.geoJSON(geoJSON, { style: geoStyle }).addTo(finalMap));
+                    });
                     break;
                 case 1:
                     break;
                 default:
                     console.log('Erro desconhecido.');
             }
+        });
+    } else {
+        geometries.forEach(geometry => {
+            console.log(geometry.remove());
         });
     }
 }
