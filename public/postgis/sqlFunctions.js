@@ -1,6 +1,8 @@
 exports.run = function (request, response, db) {
-    let mainQuery = "select (ST_AsGeoJSON(geom)) from mangroveinfo" //where (city = 'Belém' and state = 'Pará')"// or (city = 'Altamira' and state = 'Pará')";
-    db.sql_query(mainQuery).then((success) => {        
+    let query = JSON.parse(JSON.stringify(request.query));
+
+    let mainQuery = (query.base == 'city') ? "select (ST_AsGeoJSON(geom)) from coastinfo" : 'select (ST_AsGeoJSON(geom)) from states';
+    db.sql_query(mainQuery).then((success) => {
         response.send({
             'code': 0,/*Its works code.*/
             'result': success.rows

@@ -520,8 +520,13 @@ function configOptions(layerImg) {
         '<form>' +
         '<div class="form-group">' +
         '<div class="form-check">' +
-        '<input class="form-check-input" type="checkbox" style="-webkit-appearance: checkbox !important;" onchange="getCities(this)">' +
-        '<label class="form-check-label" style="margin-left: 5px;">Municípios</label>' +
+        '<input class="form-check-input" type="checkbox" style="-webkit-appearance: checkbox !important;" onchange="getDatabaseInfos(this, 0)">' +
+        '<label class="form-check-label" style="margin-left: 5px;">Municípios Costeiros</label>' +
+        '</div>' +
+        '<div class="form-check">' +
+        '<input class="form-check-input" type="checkbox" style="-webkit-appearance: checkbox !important;" onchange="getDatabaseInfos(this, 1)">' +
+        '<label class="form-check-label" style="margin-left: 5px;">Estados Costeiros</label>' +
+        '</div>' +
         '</div>' +
         '</form>'
     );
@@ -568,13 +573,14 @@ function animatorNonBlur() {
 };
 
 
-function getCities(checkbox) {
+function getDatabaseInfos(checkbox, type) {
 
     let geoJSON = { "type": "Feature", "geometry": { "type": null, "coordinates": null } };
-    let geoStyle = { "color": "#ff7800", "weight": 1, "opacity": 0.65 };
-    console.log(checkbox.checked);
+    let base = (type == 0) ? 'city' : 'states';
+    let geoStyle = { "color": (base == 'city') ? "#ff7800" : "#368aff", "weight": 1, "opacity": 0.65 };
+
     if (checkbox.checked) {
-        $.get('/postgis/sqlFunctions', function (data) {
+        $.get('/postgis/sqlFunctions?base=' + base, function (data) {
             switch (data.code) {
                 case 0:
                     data.result.forEach(result => {
