@@ -1,14 +1,55 @@
 /** 
+ * Created by: Jhonatan Rodrigues dos Santos
  * Include this file after lefleat.js
 */
 let map;
 let circleList = [];
+let latLongList = [];
+let tempLatLongList = [];
+let polygonsList = [];
+let line = null;
+let mouseHandler = false;
 
+function setMouseHandler() {
+    L.CursorHandler = L.Handler.extend({
+        addHooks: function () {
+            this._map.on('mouseover', this.getMouseLatLon, this);
+            this._map.on('mousemove', this.getMouseLatLon, this);
+            this._map.on('mouseout', this.getMouseLatLon, this);
+        },
+        removeHooks: function () {
+            this._map.off('mouseover', this.getMouseLatLon, this);
+            this._map.off('mousemove', this.getMouseLatLon, this);
+            this._map.off('mouseout', this.getMouseLatLon, this);
+        },
+        getMouseLatLon: function (e) {
+            console.log('Lista Original = ', latLongList.length);
+            //console.log(`Lat ${e.latlng.toString()} Lng ${e.latlng.toString()}`);
+            if (circleList.length >= 1) {
+                if (line != null) {
+                    line.remove();
+                    line = null;
+                }
+                tempLatLongList = latLongList.slice();
+                tempLatLongList.push([e.latlng.lat, e.latlng.lng]);
+                line = L.polyline(tempLatLongList, { color: 'red', weight: 1 }).addTo(map);
+                $('.leaflet-container').css('cursor', 'crosshair');            
+            }
+        }
+    });
+    L.Map.addInitHook('addHandler', 'cursor', L.CursorHandler);
+}
+setMouseHandler();
 let setMapCurrentMap = function (currentMap) {
     map = currentMap;
 }
 
 let createCircle = function (lat, lon, color, fillColor, fillOpacity, weight) {
+    if (!mouseHandler) {
+        map.cursor.enable();
+        mouseHandler = !mouseHandler;
+    }
+    latLongList.push([lat, lon]);
     circleList.push(
         L.circle([lat, lon], {
             color: color,
@@ -16,8 +57,21 @@ let createCircle = function (lat, lon, color, fillColor, fillOpacity, weight) {
             fillOpacity: fillOpacity,
             weight: weight,
             radius: getRadius()
-        }).addTo(map)
-    );
+        }).addTo(map));
+    /*if (circleList.length == '') {
+        line = L.polyline(latLongList, { color: 'red', weight: 1 }).addTo(map);
+        
+        if (polygonsList.length == 1) {
+            polygonsList[0].remove();
+            polygonsList = [];
+        }
+        polygonsList.push(
+            L.polygon(latLongList, {
+                color: 'red',
+                weight: 1
+            }).addTo(map));
+    }*/
+
 }
 
 let onMapZoom = function () {

@@ -24,6 +24,8 @@ let checkboxList = [];
 let rangeValues = [];
 let geometries = [];
 
+let drawType = null;
+
 function initMap(mapType) {
     let centerValues;
     let zoomValue;
@@ -46,18 +48,17 @@ function initMap(mapType) {
         id: mapType,
         accessToken: 'pk.eyJ1IjoiY2FkYXN0cm9zZGl2ZXJzb3MiLCJhIjoiY2pqOTNuNXY3MmwzaDNxcjU2YTVraGxvNyJ9.2Lv4RwCJl79HhlO-cuDcHQ'
     });
-    finalMap = L.map('mapid', { center: centerValues, zoom: zoomValue, layers: [defaultMap] });
-
+    finalMap = L.map('mapid', { center: centerValues, zoom: zoomValue, layers: [defaultMap] });    
     //marker = null;
     //MapLayers = null;
     //GraphLayer = null;
     //setOnclick = true;
     //selectYear = null;
     //currentSelect = null;
-    window.finalMap;    
+    window.finalMap;
     setMapCurrentMap(finalMap);
     onMapZoom();
-    createCircle(-0.842, -47.914, 'red', '#ffffff', 0.5, 1);
+    //createCircle(-0.842, -47.914, 'red', '#ffffff', 0.5, 1);
 
     if (proccess) {
         defaultMap.addTo(finalMap);
@@ -175,63 +176,66 @@ function initMapClick() {
         //document.getElementById('chart_div').innerHTML = '<div class="center-block"><span class="fa fa-cog fa-spin"></span> Carregando</div>';
         //$("#saveGraphPNG").attr('class', 'modal-footer d-none');
         if ($('.leaflet-container').css('cursor') === 'crosshair') {
-            $('.leaflet-container').css('cursor', '');
-            if (marker === null) {
-                marker = L.marker([e.latlng.lat, e.latlng.lng]).addTo(finalMap);
-            } else {
-                marker.remove();
-                marker = L.marker([e.latlng.lat, e.latlng.lng]).addTo(finalMap);
-            }
-            $.get(platform + 'gee/temporalVisualization/pixelVariation', 'lat=' + (e.latlng.lat) + '&lon=' + (e.latlng.lng), function (data) {
-                L.Control.Graph = L.Control.extend({
-                    onAdd: function (map) {
-
-                        var main_div = L.DomUtil.create('div', '');
-                        var chart_div = L.DomUtil.create('div', '', main_div);
-                        var header_div = L.DomUtil.create('div', 'text-right');
-                        var header_maximize = L.DomUtil.create('i', 'material-icons');
-                        var header_close = L.DomUtil.create('i', 'material-icons');
-                        var sub_div = L.DomUtil.create('div', '');
-
-                        chart_div.id = 'chartDiv';
-                        header_div.id = 'headerDiv';
-                        header_maximize.id = 'headerMaximize';
-                        header_close.id = 'headerClose';
-                        sub_div.id = 'chart_div';
-
-                        header_div.appendChild(header_maximize);
-                        header_div.appendChild(header_close);
-                        chart_div.appendChild(header_div);
-                        chart_div.appendChild(sub_div);
-
-                        L.DomEvent.disableClickPropagation(main_div);
-                        L.DomEvent.disableClickPropagation(chart_div);
-                        L.DomEvent.disableClickPropagation(header_div);
-                        L.DomEvent.disableClickPropagation(sub_div);
-                        return chart_div;
-                    },
-                    onRemove: function (map) {
-                    }
-                });
-                L.control.graph = function (opts) {
-                    return new L.Control.Graph(opts);
-                }
-                if (GraphLayer === null) {
-                    GraphLayer = L.control.graph({ position: 'bottomleft' }).addTo(finalMap);
+            if (drawType === 'point') {
+                $('.leaflet-container').css('cursor', '');
+                if (marker === null) {
+                    marker = L.marker([e.latlng.lat, e.latlng.lng]).addTo(finalMap);
                 } else {
-                    GraphLayer.remove();
-                    GraphLayer = L.control.graph({ position: 'bottomleft' }).addTo(finalMap);
+                    marker.remove();
+                    marker = L.marker([e.latlng.lat, e.latlng.lng]).addTo(finalMap);
                 }
-                //dragElement(document.getElementById("chartDiv"));
-                //document.getElementById('headerDiv').addEventListener('mousedown', mouseDown, false);
-                //window.addEventListener('mouseup', mouseUp, false);
-                creatGraph(data);
-                $("#TVGraph").modal('hide');
-            });
+                $.get(platform + 'gee/temporalVisualization/pixelVariation', 'lat=' + (e.latlng.lat) + '&lon=' + (e.latlng.lng), function (data) {
+                    L.Control.Graph = L.Control.extend({
+                        onAdd: function (map) {
+
+                            var main_div = L.DomUtil.create('div', '');
+                            var chart_div = L.DomUtil.create('div', '', main_div);
+                            var header_div = L.DomUtil.create('div', 'text-right');
+                            var header_maximize = L.DomUtil.create('i', 'material-icons');
+                            var header_close = L.DomUtil.create('i', 'material-icons');
+                            var sub_div = L.DomUtil.create('div', '');
+
+                            chart_div.id = 'chartDiv';
+                            header_div.id = 'headerDiv';
+                            header_maximize.id = 'headerMaximize';
+                            header_close.id = 'headerClose';
+                            sub_div.id = 'chart_div';
+
+                            header_div.appendChild(header_maximize);
+                            header_div.appendChild(header_close);
+                            chart_div.appendChild(header_div);
+                            chart_div.appendChild(sub_div);
+
+                            L.DomEvent.disableClickPropagation(main_div);
+                            L.DomEvent.disableClickPropagation(chart_div);
+                            L.DomEvent.disableClickPropagation(header_div);
+                            L.DomEvent.disableClickPropagation(sub_div);
+                            return chart_div;
+                        },
+                        onRemove: function (map) {
+                        }
+                    });
+                    L.control.graph = function (opts) {
+                        return new L.Control.Graph(opts);
+                    }
+                    if (GraphLayer === null) {
+                        GraphLayer = L.control.graph({ position: 'bottomleft' }).addTo(finalMap);
+                    } else {
+                        GraphLayer.remove();
+                        GraphLayer = L.control.graph({ position: 'bottomleft' }).addTo(finalMap);
+                    }
+                    //dragElement(document.getElementById("chartDiv"));
+                    //document.getElementById('headerDiv').addEventListener('mousedown', mouseDown, false);
+                    //window.addEventListener('mouseup', mouseUp, false);
+                    creatGraph(data);
+                    $("#TVGraph").modal('hide');
+                });
+            } else {
+                createCircle(e.latlng.lat, e.latlng.lng, 'red', '#ffffff', 0.5, 1);
+            }
         }
     }
     finalMap.on('click', onMapClick);
-    console.log('hide...');
     $("#TVGraph").modal('hide');
 }
 
@@ -475,6 +479,7 @@ function tools(currentMap) {
             pointer.setAttribute('title', 'Adicionar pontos');
             pointer.innerHTML = 'location_on';
             pointer.onclick = () => {
+                drawType = 'point';
                 $('.leaflet-container').css('cursor', 'crosshair');
             };
 
@@ -482,6 +487,10 @@ function tools(currentMap) {
             show_chart.style.cursor = 'pointer';
             show_chart.setAttribute('title', 'Desenhar forma');
             show_chart.innerHTML = 'show_chart';
+            show_chart.onclick = () => {
+                drawType = 'polygon';
+                $('.leaflet-container').css('cursor', 'crosshair');
+            };
 
             insert_chart.style.cursor = 'pointer';
             insert_chart.setAttribute('title', 'Gerar gráfico');
