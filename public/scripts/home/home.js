@@ -54,6 +54,11 @@ function initMap(mapType) {
     //setOnclick = true;
     //selectYear = null;
     //currentSelect = null;
+    window.finalMap;    
+    setMapCurrentMap(finalMap);
+    onMapZoom();
+    createCircle(-0.842, -47.914, 'red', '#ffffff', 0.5, 1);
+
     if (proccess) {
         defaultMap.addTo(finalMap);
         addMapLayers(firstYear);
@@ -99,7 +104,6 @@ function addMapLayers(currentYear) {
         MapLayers.remove();
     }
     currentTools = tools(finalMap);
-    animatorBlur();
     $("#TVGraph").modal({ backdrop: 'static', keyboard: false });
     //document.getElementById('chart_div').innerHTML = '<div class="center-block"><span class="fa fa-cog fa-spin"></span> Carregando</div>';
     $.get(platform + 'gee/assetsVisualization/scriptAlfa', 'year=' + (currentYear), function (data) {
@@ -138,16 +142,9 @@ function addMapLayers(currentYear) {
                 base[htmlOutput('Pontos de amostra', -1)] = L.layerGroup(pointsList);
             }
         }
-        animatorNonBlur();
-        $("#TVGraph").modal('hide');
-        $('#navTop').removeClass('blur-me');
-
         MapLayers = L.control.layers(null, base, { collapsed: false }).addTo(finalMap);
-
         initPopover();
-
         initRangeOption();
-
         initMapClick();
     });
 }
@@ -185,7 +182,6 @@ function initMapClick() {
                 marker.remove();
                 marker = L.marker([e.latlng.lat, e.latlng.lng]).addTo(finalMap);
             }
-            $("#TVGraph").modal({ backdrop: 'static', keyboard: false });
             $.get(platform + 'gee/temporalVisualization/pixelVariation', 'lat=' + (e.latlng.lat) + '&lon=' + (e.latlng.lng), function (data) {
                 L.Control.Graph = L.Control.extend({
                     onAdd: function (map) {
@@ -235,6 +231,8 @@ function initMapClick() {
         }
     }
     finalMap.on('click', onMapClick);
+    console.log('hide...');
+    $("#TVGraph").modal('hide');
 }
 
 function initRangeOption() {
@@ -532,45 +530,6 @@ function configOptions(layerImg) {
     );
     layerImg.style.width = '22px';
 }
-
-//By Luiz Gay
-function animatorBlur() {
-    $({ blurRadius: 0 }).animate({ blurRadius: 100 }, {
-        duration: 1100,
-        easing: 'swing', // or "linear"
-        // use jQuery UI or Easing plugin for more options
-        step: function () {
-            //console.log(this.blurRadius);
-            $('#container').css({
-                "-webkit-filter": "blur(" + this.blurRadius + "px)",
-                "filter": "blur(" + this.blurRadius + "px)"
-            });
-            $('#navTop').css({
-                "-webkit-filter": "blur(" + this.blurRadius + "px)",
-                "filter": "blur(" + this.blurRadius + "px)"
-            });
-
-        }
-    });
-};
-
-function animatorNonBlur() {
-    $({ blurRadius: 100 }).animate({ blurRadius: 0 }, {
-        duration: 500,
-        easing: 'swing', // or "linear"
-        // use jQuery UI or Easing plugin for more options
-        step: function () {
-            $('#container').css({
-                "-webkit-filter": "blur(" + this.blurRadius + "px)",
-                "filter": "blur(" + this.blurRadius + "px)"
-            });
-            $('#navTop').css({
-                "-webkit-filter": "blur(" + this.blurRadius + "px)",
-                "filter": "blur(" + this.blurRadius + "px)"
-            });
-        }
-    });
-};
 
 
 function getDatabaseInfos(checkbox, type) {
