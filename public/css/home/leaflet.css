@@ -204,7 +204,7 @@
 /* cursors */
 
 .leaflet-interactive {
-	cursor: pointer;
+/*	cursor: pointer; */
 	}
 .leaflet-grab {
 	cursor: -webkit-grab;

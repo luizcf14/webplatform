@@ -48,17 +48,14 @@ function initMap(mapType) {
         id: mapType,
         accessToken: 'pk.eyJ1IjoiY2FkYXN0cm9zZGl2ZXJzb3MiLCJhIjoiY2pqOTNuNXY3MmwzaDNxcjU2YTVraGxvNyJ9.2Lv4RwCJl79HhlO-cuDcHQ'
     });
-    finalMap = L.map('mapid', { center: centerValues, zoom: zoomValue, layers: [defaultMap] });    
+    finalMap = L.map('mapid', { center: centerValues, zoom: zoomValue, layers: [defaultMap] });
     //marker = null;
     //MapLayers = null;
     //GraphLayer = null;
     //setOnclick = true;
     //selectYear = null;
-    //currentSelect = null;
-    window.finalMap;
-    setMapCurrentMap(finalMap);
-    onMapZoom();
-    //createCircle(-0.842, -47.914, 'red', '#ffffff', 0.5, 1);
+    //currentSelect = null;    
+    //createCircle(-0.842, -47.914, 'red', '#ffffff', 0.5, 1);    
 
     if (proccess) {
         defaultMap.addTo(finalMap);
@@ -73,6 +70,9 @@ function initMap(mapType) {
         currentRangeValues();
         initMapClick();
     }
+    window.finalMap;
+    setMapCurrentMap(finalMap);
+    onMapZoom();
 }
 
 function activeLayers() {
@@ -230,8 +230,9 @@ function initMapClick() {
                     creatGraph(data);
                     $("#TVGraph").modal('hide');
                 });
-            } else {
-                drawGeometry(e.latlng.lat, e.latlng.lng, 'red', '#ffffff', 0.5, 1, 'Polygon');
+            } else if ('Polygon') {
+                //drawGeometry(e.latlng.lat, e.latlng.lng, 'red', '#ffffff', 0.5, 1, 'Polygon');
+                enableDraw('Polygon');
             }
         }
     }
@@ -488,8 +489,14 @@ function tools(currentMap) {
             show_chart.setAttribute('title', 'Desenhar forma');
             show_chart.innerHTML = 'show_chart';
             show_chart.onclick = () => {
-                drawType = 'polygon';
-                $('.leaflet-container').css('cursor', 'crosshair');
+                if (drawType == null) {
+                    drawType = 'polygon';
+                    $('.leaflet-container').css('cursor', 'crosshair');                    
+                } else {
+                    drawType = null;
+                    $('.leaflet-container').css('cursor', '');
+                    disableDraw();
+                }
             };
 
             insert_chart.style.cursor = 'pointer';

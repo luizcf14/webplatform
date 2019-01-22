@@ -24,35 +24,45 @@ function setMouseHandler() {
             this._map.off('mouseover', this.getMouseLatLon, this);
             this._map.off('mousemove', this.getMouseLatLon, this);
             this._map.off('mouseout', this.getMouseLatLon, this);
-            //map.style.cursor = 'default';
+            //map.style.cursor = 'default';            
         },
         getMouseLatLon: function (e) {
             if (circleList.length >= 1) {
-                $('.leaflet-container').css('cursor', 'crosshair');
-                $('.leaflet-interactive').css('cursor', 'crosshair');
                 if (line != null) {
                     line.remove();
                     line = null;
                 }
                 createLine(e.latlng.lat, e.latlng.lng, 'red', 1);
+                console.log('createLine = ', drawIsEnable);
             }
         }
     });
     L.Map.addInitHook('addHandler', 'cursor', L.CursorHandler);
 }
+
 setMouseHandler();
+function editPolygon(p) {
+    window.lefleatPolygonByMe = p;
+    console.log(p);
+}
 let setMapCurrentMap = function (currentMap) {
     map = currentMap;
     map.on("dblclick", function () {
-        map.doubleClickZoom.disable();
         switch (DrawType) {
             case 'Polygon':
                 if (latLongList.length >= 3) {
-                    L.polygon(latLongList, { color: 'red', weight: 1 }).addTo(map);
+                    console.log('Polygon...');
+                    let tempPolygon = L.polygon(latLongList, { color: 'red', weight: 1 }).addTo(map);
+                    tempPolygon.on('click', editPolygon);
+                    polygonsList.push(tempPolygon);
+                    latLongList = [];
+                    circleList.forEach(circle => {
+                        circle.remove();
+                    });
+                    circleList = [];
                 }
                 break;
         }
-        map.doubleClickZoom.enable();
     });
 }
 
@@ -62,15 +72,13 @@ let drawController = function (op, type) {
             if (!drawIsEnable) {
                 drawIsEnable = !drawIsEnable;
                 map.cursor.enable();
-                mouseHandler = !mouseHandler;
                 DrawType = type;
             }
             break;
         case 1: /*disable*/
             if (drawIsEnable) {
-                drawIsEnable = !drawControler;
+                drawIsEnable = !drawIsEnable;
                 map.cursor.disable();
-                mouseHandler = !mouseHandler;
             }
             break;
         default:
@@ -79,6 +87,7 @@ let drawController = function (op, type) {
 }
 
 let createCircle = function (lat, lon, color, fillColor, fillOpacity, weight) {
+    console.log('circulo');
     latLongList.push([lat, lon]);
     circleList.push(
         L.circle([lat, lon], {
@@ -108,14 +117,13 @@ let createLine = function (lat, lng, color, weight) {
     tempLatLongList = latLongList.slice();
     tempLatLongList.push([lat, lng]);
     line = L.polyline(tempLatLongList, { color: color, weight: weight }).addTo(map);
-    line.on('mouseover', function () {
+    /*line.on('mouseover', function () {
         $('.leaflet-container').css('cursor', 'crosshair');
-        $('.leaflet-interactive').css('cursor', 'crosshair');        
-    });
+        $('.leaflet-interactive').css('cursor', 'crosshair');
+    });*/
 }
 
-let drawGeometry = function (lat, lon, color, fillColor, fillOpacity, weight, type) {
-    drawController(0, type);
+let drawGeometry = function (lat, lon, color, fillColor, fillOpacity, weight) {
     createCircle(lat, lon, color, fillColor, fillOpacity, weight);
 }
 
@@ -125,6 +133,22 @@ let onMapZoom = function () {
             circle.setRadius(getRadius());
         });
     });
+}
+
+function draw(e) {
+    drawGeometry(e.latlng.lat, e.latlng.lng, 'red', '#ffffff', 0.5, 1, 'Polygon');
+}
+
+let enableDraw = function (type) {
+    map.doubleClickZoom.disable();
+    drawController(0, type);
+    map.on('click', draw);
+}
+
+let disableDraw = function () {
+    map.doubleClickZoom.enable();
+    drawController(1);
+    map.off('click', draw);
 }
 
 let getRadius = function () {
