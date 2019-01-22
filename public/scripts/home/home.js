@@ -231,7 +231,7 @@ function initMapClick() {
                     $("#TVGraph").modal('hide');
                 });
             } else {
-                createCircle(e.latlng.lat, e.latlng.lng, 'red', '#ffffff', 0.5, 1);
+                drawGeometry(e.latlng.lat, e.latlng.lng, 'red', '#ffffff', 0.5, 1, 'Polygon');
             }
         }
     }
