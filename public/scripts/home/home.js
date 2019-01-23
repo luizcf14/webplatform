@@ -1,4 +1,5 @@
 ﻿//let platform = 'platform/';
+
 let platform = '';
 //let mymap = L.map('mapid').setView([-1.464261, -48.470320], 5);
 let firstYear = 2000;
@@ -25,6 +26,7 @@ let rangeValues = [];
 let geometries = [];
 
 let drawType = null;
+let drawJS = new DrawJS();
 
 function initMap(mapType) {
     let centerValues;
@@ -70,9 +72,8 @@ function initMap(mapType) {
         currentRangeValues();
         initMapClick();
     }
-    window.finalMap;
-    setMapCurrentMap(finalMap);
-    onMapZoom();
+    drawJS.init(finalMap);
+    
 }
 
 function activeLayers() {
@@ -232,7 +233,7 @@ function initMapClick() {
                 });
             } else if ('Polygon') {
                 //drawGeometry(e.latlng.lat, e.latlng.lng, 'red', '#ffffff', 0.5, 1, 'Polygon');
-                enableDraw('Polygon');
+                drawJS.enableDraw('Polygon');
             }
         }
     }
@@ -491,11 +492,11 @@ function tools(currentMap) {
             show_chart.onclick = () => {
                 if (drawType == null) {
                     drawType = 'polygon';
-                    $('.leaflet-container').css('cursor', 'crosshair');                    
+                    $('.leaflet-container').css('cursor', 'crosshair');
                 } else {
                     drawType = null;
                     $('.leaflet-container').css('cursor', '');
-                    disableDraw();
+                    drawJS.disableDraw();
                 }
             };
 
