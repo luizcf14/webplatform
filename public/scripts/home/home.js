@@ -231,9 +231,6 @@ function initMapClick() {
                     creatGraph(data);
                     $("#TVGraph").modal('hide');
                 });
-            } else if ('Polygon') {
-                //drawGeometry(e.latlng.lat, e.latlng.lng, 'red', '#ffffff', 0.5, 1, 'Polygon');
-                drawJS.enableDraw('Polygon');
             }
         }
     }
@@ -493,6 +490,7 @@ function tools(currentMap) {
                 if (drawType == null) {
                     drawType = 'polygon';
                     $('.leaflet-container').css('cursor', 'crosshair');
+                    drawJS.enableDraw('Polygon');
                 } else {
                     drawType = null;
                     $('.leaflet-container').css('cursor', '');

@@ -11,28 +11,34 @@ class DrawJS {
         this._polygonsList = [];
         this._line = null;
         this._mouseHandler = false;
-        this._drawIsEnable = false;
+        this._editPolygon = null;
         this._DrawType = null;
 
         //Init Mouse Handler
         this.initMouseHandler();
-        console.log(this._latLongList);
     }
 
     init(map) {
         this._currentMap = map;
         //Init on Map Zoom
         this.onMapZoom();
-        console.log(this._latLongList);
+        //Init Map Click
+        this.initMapClick();
     }
 
     initMapClick() {
         this._currentMap.on("dblclick", () => {
-            switch (DrawType) {
+            switch (this._DrawType) {
                 case 'Polygon':
                     if (this._latLongList.length >= 3) {
                         let Polygon = L.polygon(this._latLongList, { color: 'red', weight: 1 }).addTo(this._currentMap);
-                        Polygon.on('click', this.editPolygon);
+                        //Add a click function to edit each Polygon.
+                        Polygon.on('click', (polygon) => {
+                            this._editPolygon = polygon;
+                            polygon.target._latlngs[0].forEach(point => {
+                                this.createCircle(point.lat, point.lng, 'red', '#ffffff', 0.5, 1);
+                            });
+                        });
                         this._polygonsList.push(Polygon);
                         this._latLongList = [];
                         this._circleList.forEach(circle => {
@@ -41,6 +47,13 @@ class DrawJS {
                         this._circleList = [];
                     }
                     break;
+            }
+        });
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Delete' && this._editPolygon != null) {
+                this._polygonsList[0].remove();
+                //this._editPolygon.remove();
+                //this._editPolygon = null;
             }
         });
     }
@@ -76,54 +89,27 @@ class DrawJS {
                 circle.setRadius(this.getRadius());
             });
         });
-        console.log(this._latLongList);
-    }
-
-    drawController(op, type) {
-        console.log('Draw controller');
-        switch (op) {
-            case 0: /*enable*/
-                if (!this._drawIsEnable) {
-                    this._drawIsEnable = !this._drawIsEnable;
-                    this._currentMap.cursor.enable();
-                    this._DrawType = type;
-                }
-                break;
-            case 1: /*disable*/
-                if (this._drawIsEnable) {
-                    this._drawIsEnable = !this._drawIsEnable;
-                    this._currentMap.cursor.disable();
-                }
-                break;
-            default:
-                console.error('Draw Controller Error.');
-        }
     }
 
     enableDraw(type) {
-        console.log('Enable Draw');
         this._currentMap.doubleClickZoom.disable();
-        this.drawController(0, type);
-        this._currentMap.on('click', this.draw);
+        this._currentMap.cursor.enable();
+        this._DrawType = type;
+        //Enable Draw
+        this._currentMap.on('click', this.draw, this);
     }
 
     disableDraw() {
         this._currentMap.doubleClickZoom.enable();
-        this.drawController(1);
-        this._currentMap.off('click', this.draw);
+        this._currentMap.cursor.disable();
+        //Disable Draw
+        this._currentMap.off('click', this.draw, this);
     }
 
-    draw(event, color = 'red', fillColor = '#ffffff', weight = 0.5) {
+    draw(event, color = 'red', fillColor = '#ffffff', fillOpacity = 0.5, weight = 1) {
         let lat = event.latlng.lat, lng = event.latlng.lng;
         this._latLongList.push([lat, lng]);
-        this._circleList.push(
-            L.circle([lat, lng], {
-                color: color,
-                fillColor: fillColor,
-                fillOpacity: fillOpacity,
-                weight: weight,
-                radius: getRadius()
-            }).addTo(this._currentMap));
+        this.createCircle(lat, lng, color, fillColor, fillOpacity, weight);
     }
 
     createLine(lat, lng, color, weight) {
@@ -132,8 +118,18 @@ class DrawJS {
         this._line = L.polyline(this._tempLatLongList, { color: color, weight: weight }).addTo(this._currentMap);
     }
 
+    createCircle(lat, lng, color, fillColor, fillOpacity, weight) {
+        this._circleList.push(
+            L.circle([lat, lng], {
+                color: color,
+                fillColor: fillColor,
+                fillOpacity: fillOpacity,
+                weight: weight,
+                radius: this.getRadius()
+            }).addTo(this._currentMap));
+    }
+
     getRadius() {
-        console.log(this._latLongList);
         switch (this._currentMap.getZoom()) {
             case 0:
                 return 400000;
