@@ -19,11 +19,15 @@ class DrawJS {
     }
 
     init(map) {
+        let reload = this._currentMap != null;
         this._currentMap = map;
         //Init on Map Zoom
         this.onMapZoom();
         //Init Map Click
         this.initMapClick();
+        if (reload) {
+            this.reload();
+        }
     }
 
     initMapClick() {
@@ -31,29 +35,21 @@ class DrawJS {
             switch (this._DrawType) {
                 case 'Polygon':
                     if (this._latLongList.length >= 3) {
-                        let Polygon = L.polygon(this._latLongList, { color: 'red', weight: 1 }).addTo(this._currentMap);
-                        //Add a click function to edit each Polygon.
-                        Polygon.on('click', (polygon) => {
-                            this._editPolygon = polygon;
-                            polygon.target._latlngs[0].forEach(point => {
-                                this.createCircle(point.lat, point.lng, 'red', '#ffffff', 0.5, 1);
-                            });
-                        });
-                        this._polygonsList.push(Polygon);
-                        this._latLongList = [];
-                        this._circleList.forEach(circle => {
-                            circle.remove();
-                        });
-                        this._circleList = [];
+                        this.createPolygon();
                     }
                     break;
             }
         });
+        /*Remove Draws*/
         document.addEventListener('keydown', (event) => {
             if (event.key === 'Delete' && this._editPolygon != null) {
-                this._polygonsList[0].remove();
-                //this._editPolygon.remove();
-                //this._editPolygon = null;
+                this.removeCircles();
+                this._editPolygon.remove();
+                /*Remove Polygons from List*/
+                this._polygonsList = this._polygonsList.filter((element) => { return element != this._editPolygon });
+                this._editPolygon = null;
+            } else if (event.key === 'Escape') {
+                this.disableDraw();                
             }
         });
     }
@@ -72,10 +68,7 @@ class DrawJS {
             },
             getMouseLatLon: (e) => {
                 if (this._circleList.length >= 1) {
-                    if (this._line != null) {
-                        this._line.remove();
-                        this._line = null;
-                    }
+                    this.removeLine();
                     this.createLine(e.latlng.lat, e.latlng.lng, 'red', 1);
                 }
             }
@@ -102,6 +95,15 @@ class DrawJS {
     disableDraw() {
         this._currentMap.doubleClickZoom.enable();
         this._currentMap.cursor.disable();
+        this._editPolygon = null;
+
+        if (this._latLongList.length >= 3) {
+            this.createPolygon();
+        } else if (this._latLongList.length < 3) {
+            this.removeCircles();
+            this.removeLine();
+            this._latLongList = [];
+        }
         //Disable Draw
         this._currentMap.off('click', this.draw, this);
     }
@@ -118,6 +120,13 @@ class DrawJS {
         this._line = L.polyline(this._tempLatLongList, { color: color, weight: weight }).addTo(this._currentMap);
     }
 
+    removeLine() {
+        if (this._line != null) {
+            this._line.remove();
+            this._line = null;
+        }
+    }
+
     createCircle(lat, lng, color, fillColor, fillOpacity, weight) {
         this._circleList.push(
             L.circle([lat, lng], {
@@ -127,6 +136,40 @@ class DrawJS {
                 weight: weight,
                 radius: this.getRadius()
             }).addTo(this._currentMap));
+    }
+
+    removeCircles() {
+        this._circleList.forEach(circle => {
+            circle.remove();
+        });
+        this._circleList = [];
+    }
+
+    createPolygon() {
+        this.removeLine();
+        let Polygon = L.polygon(this._latLongList, { color: 'red', weight: 1 }).addTo(this._currentMap);
+        //Add a click function to edit each Polygon.
+        Polygon.on('click', (polygon) => {
+            if (!this._currentMap.cursor._enabled) {
+                if (this._editPolygon != null) {
+                    this.removeCircles();
+                }
+                this._editPolygon = Polygon;
+                polygon.target._latlngs[0].forEach(point => {
+                    this.createCircle(point.lat, point.lng, 'red', '#ffffff', 0.5, 1);
+                });
+            }
+        });
+        this._polygonsList.push(Polygon);
+        this._latLongList = [];
+        this.removeCircles();
+    }
+
+    reload() {
+        //Reloads all Polygons and display them on the Map.
+        this._polygonsList.forEach(polygon => {
+            polygon.addTo(this._currentMap);
+        });
     }
 
     getRadius() {

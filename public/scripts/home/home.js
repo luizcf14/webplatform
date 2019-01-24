@@ -73,7 +73,7 @@ function initMap(mapType) {
         initMapClick();
     }
     drawJS.init(finalMap);
-    
+
 }
 
 function activeLayers() {
@@ -455,7 +455,12 @@ function dragElement(elmnt) {
     }
 }
 */
-
+document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+        drawType = null;
+        $('.leaflet-container').css('cursor', '');
+    }
+});
 function tools(currentMap) {
     L.Control.Pointer = L.Control.extend({
         onAdd: function (map) {
