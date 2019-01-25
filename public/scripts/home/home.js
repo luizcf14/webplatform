@@ -172,6 +172,7 @@ function initPopover() {
 
 function initMapClick() {
     function onMapClick(e) {
+        $('.popover').popover('hide');
         //popup.setLatLng(e.latlng).setContent("Carregando!").openOn(finalMap);
         //$("#TVGraph").modal();
         //document.getElementById('chart_div').innerHTML = '<div class="center-block"><span class="fa fa-cog fa-spin"></span> Carregando</div>';
