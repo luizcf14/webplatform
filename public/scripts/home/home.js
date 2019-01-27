@@ -23,7 +23,9 @@ let opDiv = null;
 
 let checkboxList = [];
 let rangeValues = [];
-let geometries = [];
+let statesGeometries = [];
+let cityGeometries = [];
+let checks = [];
 
 let drawType = null;
 let drawJS = new DrawJS();
@@ -83,7 +85,7 @@ function activeLayers() {
         if (checkboxList[index].checked) {
             currentCheckboxList[index].click();
         }
-    }
+    }    
 }
 
 function currentRangeValues() {
@@ -539,19 +541,31 @@ function configOptions(layerImg) {
         '<form>' +
         '<div class="form-group">' +
         '<div class="form-check">' +
-        '<input class="form-check-input" type="checkbox" style="-webkit-appearance: checkbox !important;" onchange="getDatabaseInfos(this, 0)">' +
+        '<input id="check_1" class="form-check-input" type="checkbox" style="-webkit-appearance: checkbox !important;" onchange="getDatabaseInfos(this, 0)">' +
         '<label class="form-check-label" style="margin-left: 5px;">Municípios Costeiros</label>' +
         '</div>' +
         '<div class="form-check">' +
-        '<input class="form-check-input" type="checkbox" style="-webkit-appearance: checkbox !important;" onchange="getDatabaseInfos(this, 1)">' +
+        '<input id="check_2" class="form-check-input" type="checkbox" style="-webkit-appearance: checkbox !important;" onchange="getDatabaseInfos(this, 1)">' +
         '<label class="form-check-label" style="margin-left: 5px;">Estados Costeiros</label>' +
         '</div>' +
         '</div>' +
-        '</form>'
+        '</form>' +
+        '<script>markChekbox()</script>'
     );
     layerImg.style.width = '22px';
 }
 
+function addGeometriesToMap(geometries) {
+    geometries.forEach(geom => {
+        geom.addTo(finalMap);
+    });
+}
+
+function markChekbox() {
+    checks.forEach(check => {
+        document.getElementById(check).click();
+    });
+}
 
 function getDatabaseInfos(checkbox, type) {
 
@@ -560,25 +574,46 @@ function getDatabaseInfos(checkbox, type) {
     let geoStyle = { "color": (base == 'city') ? "#ff7800" : "#368aff", "weight": 1, "opacity": 0.65 };
 
     if (checkbox.checked) {
-        $.get('/postgis/sqlFunctions?base=' + base, function (data) {
-            switch (data.code) {
-                case 0:
-                    data.result.forEach(result => {
-                        let info = JSON.parse(result.st_asgeojson);
-                        geoJSON.geometry.type = info.type;
-                        geoJSON.geometry.coordinates = info.coordinates;
-                        geometries.push(L.geoJSON(geoJSON, { style: geoStyle }).addTo(finalMap));
-                    });
-                    break;
-                case 1:
-                    break;
-                default:
-                    console.log('Erro desconhecido.');
-            }
-        });
+        if (base === 'city' && cityGeometries.length != 0) {
+            checks.push((type == 0) ? 'check_1' : 'check_2');
+            addGeometriesToMap(cityGeometries);
+        } else if (base === 'states' && statesGeometries.length != 0) {
+            checks.push((type == 0) ? 'check_1' : 'check_2');
+            addGeometriesToMap(statesGeometries);
+        } else {
+            checks.push((type == 0) ? 'check_1' : 'check_2');
+            $.get('/postgis/sqlFunctions?base=' + base, function (data) {
+                switch (data.code) {
+                    case 0:
+                        data.result.forEach(result => {
+                            let info = JSON.parse(result.st_asgeojson);
+                            geoJSON.geometry.type = info.type;
+                            geoJSON.geometry.coordinates = info.coordinates;
+                            if (base === 'city') {
+                                cityGeometries.push(L.geoJSON(geoJSON, { style: geoStyle }).addTo(finalMap));
+                            } else {
+                                statesGeometries.push(L.geoJSON(geoJSON, { style: geoStyle }).addTo(finalMap));
+                            }
+                        });
+                        break;
+                    case 1:
+                        break;
+                    default:
+                        console.log('Erro desconhecido.');
+                }
+            });
+        }
     } else {
-        geometries.forEach(geometry => {
-            console.log(geometry.remove());
-        });
+        if (type === 0) {
+            checks.pop('check_1');
+            cityGeometries.forEach(geometry => {
+                geometry.remove();
+            });
+        } else {
+            checks.pop('check_2');
+            statesGeometries.forEach(geometry => {
+                geometry.remove();
+            });
+        }
     }
 }
