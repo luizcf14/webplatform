@@ -5,7 +5,7 @@ html, body , #mapid {
 
 /*https://codepen.io/andreas-groos/pen/oqzwmg*/
 .navbar {
-   font-family: Lobster;
+   /*font-family: Lobster;*/
   /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#ffffff+76,ffffff+90,c1c1c1+100 */
 background: rgb(255,255,255); /* Old browsers */
 background: -moz-linear-gradient(top, rgba(255,255,255,1) 76%, rgba(255,255,255,1) 90%, rgba(193,193,193,1) 100%); /* FF3.6-15 */
@@ -34,7 +34,7 @@ html, body {
 }
 
 #container {
-    height: calc(100% - 56px);    
+    height: calc(100% - 55px);    
     width: 100%;    
     overflow: hidden;
     margin-bottom: 0;
