@@ -85,7 +85,7 @@ function activeLayers() {
         if (checkboxList[index].checked) {
             currentCheckboxList[index].click();
         }
-    }    
+    }
 }
 
 function currentRangeValues() {
@@ -161,7 +161,7 @@ function initPopover() {
 
         opDiv.style.marginTop = '5px';
         opDiv.style.marginBottom = '5px';
-        layerImg.src = '../../imgs/layers-icon.png';
+        layerImg.src = window.location.href + '/imgs/layers-icon.png';
         layerImg.style.cursor = 'pointer';
         configOptions(layerImg);
         opDiv.appendChild(layerImg);
@@ -582,7 +582,7 @@ function getDatabaseInfos(checkbox, type) {
             addGeometriesToMap(statesGeometries);
         } else {
             checks.push((type == 0) ? 'check_1' : 'check_2');
-            $.get('/postgis/sqlFunctions?base=' + base, function (data) {
+            $.get(platform + 'postgis/sqlFunctions', 'base=' + base, function (data) {
                 switch (data.code) {
                     case 0:
                         data.result.forEach(result => {

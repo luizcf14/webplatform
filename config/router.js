@@ -41,8 +41,8 @@ function postgisFunctions(app, db) {
 };
 
 let router = function (app, ee, public, isLocal, db) {
-    //pth = isLocal ? '' : '/';
-    pth = '';
+    pth = isLocal ? '' : '/';
+    //pth = '';
     defaultRoute(app, '/', 'home/home.ejs');
     defaultRoute(app, '/about', 'about/about');
 
@@ -51,7 +51,6 @@ let router = function (app, ee, public, isLocal, db) {
     postgisFunctions(app, db);
     //defaultRoute(app, '*', ' pageNotFound/404.ejs');
     publicPath = public + path.sep + 'public';
-    console.log('Sistema de rotas iniciado com sucesso.', publicPath);
 };
 
 module.exports = {

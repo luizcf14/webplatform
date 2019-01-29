@@ -6,7 +6,7 @@ var express = require('express');
 var app = express();
 
 //Application port.
-var port = 21039;
+var port = 21327;
 
 //Altera o gerencamento do view engine do express.
 //Repassa o gerenciamento para o EJS.
