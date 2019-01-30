@@ -25,12 +25,16 @@ let checkboxList = [];
 let rangeValues = [];
 let statesGeometries = [];
 let cityGeometries = [];
-let checks = [];
+let checks = [{ type: 'check_1', active: false }, { type: 'check_2', active: false }];
+window.checks;
+let checkSubClick = false;
 
 let drawType = null;
 let drawJS = new DrawJS();
+let currentMapType;
 
 function initMap(mapType) {
+    currentMapType = mapType;
     let centerValues;
     let zoomValue;
 
@@ -74,6 +78,13 @@ function initMap(mapType) {
         currentRangeValues();
         initMapClick();
     }
+    checks.forEach(check => {
+        if (check.active && check.type === 'check_1') {
+            addGeometriesToMap(cityGeometries);
+        } else if (check.active && check.type === 'check_2') {
+            addGeometriesToMap(statesGeometries);
+        }
+    });
     drawJS.init(finalMap);
 
 }
@@ -108,10 +119,16 @@ function addMapLayers(currentYear) {
         MapLayers.remove();
     }
     currentTools = tools(finalMap);
+    checks.forEach(check => {
+        if (check.active && check.type === 'check_1') {
+            addGeometriesToMap(cityGeometries);
+        } else if (check.active && check.type === 'check_2') {
+            addGeometriesToMap(statesGeometries);
+        }
+    });
     $("#TVGraph").modal({ backdrop: 'static', keyboard: false });
     //document.getElementById('chart_div').innerHTML = '<div class="center-block"><span class="fa fa-cog fa-spin"></span> Carregando</div>';
     $.get(platform + 'gee/assetsVisualization/scriptAlfa', 'year=' + (currentYear), function (data) {
-
         //console.log(data);        
         let keys = Object.keys(data);
         let max = keys.length;
@@ -550,7 +567,7 @@ function configOptions(layerImg) {
         '</div>' +
         '</div>' +
         '</form>' +
-        '<script>markChekbox()</script>'
+        '<script>selectedOptions()</script>'
     );
     layerImg.style.width = '22px';
 }
@@ -561,12 +578,47 @@ function addGeometriesToMap(geometries) {
     });
 }
 
-function markChekbox() {
+function selectedOptions() {
     checks.forEach(check => {
-        document.getElementById(check).click();
+        let current = document.getElementById(check.type);
+        if (check.active) {
+            current.click();
+        }
     });
+    if (currentMapType === 'mapbox.streets') {
+        document.getElementById('op_1').checked = true;
+        document.getElementById('op_2').checked = false;
+    } else {
+        document.getElementById('op_1').checked = false;
+        document.getElementById('op_2').checked = true;
+    }
 }
 
+function getGeometries(index, geoJSON, base, geoStyle) {
+    checks[index].active = true;
+    $("#TVGraph").modal({ backdrop: 'static', keyboard: false });
+    $.get(platform + 'postgis/sqlFunctions', 'base=' + base, function (data) {
+        switch (data.code) {
+            case 0:
+                data.result.forEach(result => {
+                    let info = JSON.parse(result.st_asgeojson);
+                    geoJSON.geometry.type = info.type;
+                    geoJSON.geometry.coordinates = info.coordinates;
+                    if (base === 'city') {
+                        cityGeometries.push(L.geoJSON(geoJSON, { style: geoStyle }).addTo(finalMap));
+                    } else {
+                        statesGeometries.push(L.geoJSON(geoJSON, { style: geoStyle }).addTo(finalMap));
+                    }
+                });
+                $("#TVGraph").modal('hide');
+                break;
+            case 1:
+                break;
+            default:
+                console.log('Erro desconhecido.');
+        }
+    });
+}
 function getDatabaseInfos(checkbox, type) {
 
     let geoJSON = { "type": "Feature", "geometry": { "type": null, "coordinates": null } };
@@ -574,43 +626,23 @@ function getDatabaseInfos(checkbox, type) {
     let geoStyle = { "color": (base == 'city') ? "#ff7800" : "#368aff", "weight": 1, "opacity": 0.65 };
 
     if (checkbox.checked) {
-        if (base === 'city' && cityGeometries.length != 0) {
-            checks.push((type == 0) ? 'check_1' : 'check_2');
+        if (cityGeometries.length === 0 && base === 'city') {
+            getGeometries(0, geoJSON, base, geoStyle);
+        } else if (statesGeometries.length === 0 && base === 'states') {
+            getGeometries(1, geoJSON, base, geoStyle);
+        } else if (cityGeometries.length != 0 && base === 'city') {
             addGeometriesToMap(cityGeometries);
-        } else if (base === 'states' && statesGeometries.length != 0) {
-            checks.push((type == 0) ? 'check_1' : 'check_2');
+        } else if (statesGeometries.length != 0 && base === 'states') {
             addGeometriesToMap(statesGeometries);
-        } else {
-            checks.push((type == 0) ? 'check_1' : 'check_2');
-            $.get(platform + 'postgis/sqlFunctions', 'base=' + base, function (data) {
-                switch (data.code) {
-                    case 0:
-                        data.result.forEach(result => {
-                            let info = JSON.parse(result.st_asgeojson);
-                            geoJSON.geometry.type = info.type;
-                            geoJSON.geometry.coordinates = info.coordinates;
-                            if (base === 'city') {
-                                cityGeometries.push(L.geoJSON(geoJSON, { style: geoStyle }).addTo(finalMap));
-                            } else {
-                                statesGeometries.push(L.geoJSON(geoJSON, { style: geoStyle }).addTo(finalMap));
-                            }
-                        });
-                        break;
-                    case 1:
-                        break;
-                    default:
-                        console.log('Erro desconhecido.');
-                }
-            });
         }
     } else {
         if (type === 0) {
-            checks.pop('check_1');
+            checks[0].active = false;
             cityGeometries.forEach(geometry => {
                 geometry.remove();
             });
         } else {
-            checks.pop('check_2');
+            checks[1].active = false;
             statesGeometries.forEach(geometry => {
                 geometry.remove();
             });
