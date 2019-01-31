@@ -199,15 +199,15 @@ class DrawJS {
             case 11:
                 return 300;
             case 12:
-                return 100;
+                return 200;
             case 13:
-                return 50;
+                return 100;
             case 14:
-                return 25;
+                return 50;
             case 15:
-                return 15;
+                return 20;
             case 16:
-                return 6;
+                return 10;
             case 17:
                 return 5;
             case 18:

@@ -4,7 +4,7 @@
 <head>
     
     <base href="http://solved.eco.br/platform/" target="_blank">
-    
+
     <link rel="apple-touch-icon" sizes="57x57" href="imgs/favicon/apple-icon-57x57.png">
     <link rel="apple-touch-icon" sizes="60x60" href="imgs/favicon/apple-icon-60x60.png">
     <link rel="apple-touch-icon" sizes="72x72" href="imgs/favicon/apple-icon-72x72.png">
@@ -78,6 +78,15 @@
     <script src="common/scripts/bootstrap-4.2.1.min.js"></script>
     <!-- Leaflet JavaScript -->
     <script src="common/scripts/leaflet.js"></script>
+    <!-- Mobile Detect -->
+    <script src="common/scripts/mobile-detect-1.4.3.min.js"></script>
+    <script>
+        let md = new MobileDetect(window.navigator.userAgent);
+        //If not null, It is mobile.
+        if (md.mobile() != null) {
+            alert('mobile detected!');
+        }
+    </script>
     <!-- Google Charts -->
     <script type="text/javascript" src="common/scripts/loader.js"> </script>
     <script>

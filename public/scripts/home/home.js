@@ -52,6 +52,7 @@ function initMap(mapType) {
         proccess = false;
     }
     defaultMap = L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
+        attribution: '<a href="http://solved.eco.br">Solved Soluções em Geoinformação</a>',
         maxZoom: 20,
         id: mapType,
         accessToken: 'pk.eyJ1IjoiY2FkYXN0cm9zZGl2ZXJzb3MiLCJhIjoiY2pqOTNuNXY3MmwzaDNxcjU2YTVraGxvNyJ9.2Lv4RwCJl79HhlO-cuDcHQ'

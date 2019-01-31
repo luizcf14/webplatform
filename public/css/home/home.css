@@ -80,10 +80,10 @@ html, body {
 
 .leaflet-control-layers.leaflet-control-layers-expanded.leaflet-control {
     /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#c1c1c1+0,ffffff+4,ffffff+76,ffffff+96,c1c1c1+100&0.95+0,0.95+100 */
-background: -moz-linear-gradient(top, rgba(193,193,193,0.95) 0%, rgba(255,255,255,0.95) 4%, rgba(255,255,255,0.95) 76%, rgba(255,255,255,0.95) 96%, rgba(193,193,193,0.95) 100%); /* FF3.6-15 */
-background: -webkit-linear-gradient(top, rgba(193,193,193,0.95) 0%,rgba(255,255,255,0.95) 4%,rgba(255,255,255,0.95) 76%,rgba(255,255,255,0.95) 96%,rgba(193,193,193,0.95) 100%); /* Chrome10-25,Safari5.1-6 */
-background: linear-gradient(to bottom, rgba(193,193,193,0.95) 0%,rgba(255,255,255,0.95) 4%,rgba(255,255,255,0.95) 76%,rgba(255,255,255,0.95) 96%,rgba(193,193,193,0.95) 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
-filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f2c1c1c1', endColorstr='#f2c1c1c1',GradientType=0 ); /* IE6-9 */
+/*background: -moz-linear-gradient(top, rgba(193,193,193,0.95) 0%, rgba(255,255,255,0.95) 4%, rgba(255,255,255,0.95) 76%, rgba(255,255,255,0.95) 96%, rgba(193,193,193,0.95) 100%); /* FF3.6-15 */
+/*background: -webkit-linear-gradient(top, rgba(193,193,193,0.95) 0%,rgba(255,255,255,0.95) 4%,rgba(255,255,255,0.95) 76%,rgba(255,255,255,0.95) 96%,rgba(193,193,193,0.95) 100%); /* Chrome10-25,Safari5.1-6 */
+/*background: linear-gradient(to bottom, rgba(193,193,193,0.95) 0%,rgba(255,255,255,0.95) 4%,rgba(255,255,255,0.95) 76%,rgba(255,255,255,0.95) 96%,rgba(193,193,193,0.95) 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+/*filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f2c1c1c1', endColorstr='#f2c1c1c1',GradientType=0 ); /* IE6-9 */
 }
 
 select {
