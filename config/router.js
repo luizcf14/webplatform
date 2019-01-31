@@ -3,6 +3,7 @@ let path = require('path');
 let publicPath;
 let geeFunction;
 let sqlFunctions;
+let statistics;
 let pth;
 
 function defaultRoute(app, route, view) {
@@ -34,9 +35,17 @@ function geeTemporalVisualization(app, ee) {
 };
 
 function postgisFunctions(app, db) {
-    app.get(pth + '/postgis/sqlFunctions', function (request, response) { 
+    app.get(pth + '/postgis/sqlFunctions', function (request, response) {
         sqlFunctions = require(publicPath + path.sep + 'postgis' + path.sep + 'sqlFunctions.js');
         sqlFunctions.run(request, response, db);
+    });
+};
+
+function getStatistics(app, ee) {
+    console.log(pth + '/gee/tools/statistics');
+    app.get(pth + '/gee/tools/statistics', function (request, response) {
+        statistics = require(publicPath + path.sep + 'gee' + path.sep + 'tools' + path.sep + 'statistics.js');
+        statistics.run(ee, request, response);
     });
 };
 
@@ -49,6 +58,7 @@ let router = function (app, ee, public, isLocal, db) {
     geeAlfa(app, ee, db);
     geeTemporalVisualization(app, ee);
     postgisFunctions(app, db);
+    getStatistics(app, ee);
     //defaultRoute(app, '*', ' pageNotFound/404.ejs');
     publicPath = public + path.sep + 'public';
 };

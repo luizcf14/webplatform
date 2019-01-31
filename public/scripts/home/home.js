@@ -1,5 +1,4 @@
 ﻿//let platform = 'platform/';
-
 let platform = '';
 //let mymap = L.map('mapid').setView([-1.464261, -48.470320], 5);
 let firstYear = 2000;
@@ -120,6 +119,7 @@ function addMapLayers(currentYear) {
         //finalMap.clearLayers();
         finalMap = L.map('mapid', { center: centerValues, zoom: zoomValue, layers: [defaultMap] });
         MapLayers.remove();
+        drawJS.init(finalMap);
     }
     currentTools = tools(finalMap);
     checks.forEach(check => {
@@ -201,6 +201,7 @@ function initMapClick() {
         //$("#saveGraphPNG").attr('class', 'modal-footer d-none');
         if ($('.leaflet-container').css('cursor') === 'crosshair') {
             if (drawType === 'point') {
+                $("#TVGraph").modal({ backdrop: 'static', keyboard: false });
                 $('.leaflet-container').css('cursor', '');
                 if (marker === null) {
                     marker = L.marker([e.latlng.lat, e.latlng.lng]).addTo(finalMap);
@@ -500,6 +501,7 @@ function tools(currentMap) {
             grab.innerHTML = 'pan_tool';
             grab.onclick = () => {
                 $('.leaflet-container').css('cursor', '');
+                drawJS.disableDraw();
             };
 
             pointer.style.cursor = 'pointer';
@@ -508,6 +510,7 @@ function tools(currentMap) {
             pointer.onclick = () => {
                 drawType = 'point';
                 $('.leaflet-container').css('cursor', 'crosshair');
+                drawJS.disableDraw();
             };
 
             show_chart.id = "show";
