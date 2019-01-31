@@ -80,17 +80,9 @@
     <script src="common/scripts/leaflet.js"></script>
     <!-- Mobile Detect -->
     <script src="common/scripts/mobile-detect-1.4.3.min.js"></script>
-    <script>
-        let md = new MobileDetect(window.navigator.userAgent);
-        //If not null, It is mobile.
-        if (md.mobile() != null) {
-            alert('mobile detected!');
-        }
-    </script>
     <!-- Google Charts -->
     <script type="text/javascript" src="common/scripts/loader.js"> </script>
     <script>
-
         google.charts.load('current', { packages: ['corechart', 'line'] });
         function getGoogleVizualization(type) {
             switch (type) {

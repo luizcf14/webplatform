@@ -33,6 +33,8 @@ let drawType = null;
 let drawJS = new DrawJS();
 let currentMapType;
 
+let isMobile = (new MobileDetect(window.navigator.userAgent)).mobile() != null;
+
 function initMap(mapType) {
     currentMapType = mapType;
     let centerValues;
@@ -164,7 +166,7 @@ function addMapLayers(currentYear) {
                 base[htmlOutput('Pontos de amostra', -1)] = L.layerGroup(pointsList);
             }
         }
-        MapLayers = L.control.layers(null, base, { collapsed: false }).addTo(finalMap);
+        MapLayers = L.control.layers(null, base, { collapsed: isMobile }).addTo(finalMap);
         initPopover();
         initRangeOption();
         initMapClick();
