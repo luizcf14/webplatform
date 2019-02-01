@@ -1,66 +1,71 @@
-function calcularArea(ee, classification, id, geometria) {
+function calcularArea(ee, classification, id, geometry, bandName) {
     let imagem = classification.eq(id);
     let imageArea = imagem.multiply(ee.Image.pixelArea());
     let area = imageArea.reduceRegion({
         reducer: ee.Reducer.sum(),
-        geometry: geometria,
+        geometry: geometry,
         maxPixels: 1e13
-    })
-    return area;
+    });
+    return area.get(bandName).getInfo();
 };
 
-function calcularNumPixels(ee, classification, id, geometria) {
+function calcularNumPixels(ee, classification, id, geometry, bandName) {
     let imagem = classification.eq(id);
     let numPixels = imagem.reduceRegion({
         reducer: ee.Reducer.count(),
-        geometry: geometria,
+        geometry: geometry,
         maxPixels: 1e13
     });
-    return numPixels;
+    return numPixels.get(bandName).getInfo();
 };
 
-function calcularMedia(ee, classification, id, geometria) {
+function calcularMedia(ee, classification, id, geometry, bandName) {
     let imagem = classification.eq(id);
     let media = imagem.reduceRegion({
         reducer: ee.Reducer.mean(),
-        geometry: geometria,
+        geometry: geometry,
         maxPixels: 1e13
     });
-    return media;
+    return media.get(bandName).getInfo();;
 };
 
-function calcularMediana(ee, classification, id, geometria) {
+function calcularMediana(ee, classification, id, geometry, bandName) {
     let imagem = classification.eq(id);
     let mediana = imagem.reduceRegion({
         reducer: ee.Reducer.median(),
-        geometry: geometria,
+        geometry: geometry,
         maxPixels: 1e13
     });
-    return mediana;
+    return mediana.get(bandName).getInfo();;
 };
 
-function calcularDesvioPadrao(ee, classification, id, geometria) {
+function calcularDesvioPadrao(ee, classification, id, geometry, bandName) {
     let imagem = classification.eq(id);
     let desvioPadrao = imagem.reduceRegion({
         reducer: ee.Reducer.median(),
-        geometry: geometria,
+        geometry: geometry,
         maxPixels: 1e13
     });
-    return desvioPadrao;
+    return desvioPadrao.get(bandName).getInfo();;
 };
 
 exports.run = ((ee, request, response) => {
+    var query = JSON.parse(JSON.stringify(request.query));
     let classification = ee.Image('projects/samm/SAMM/Classification_3/2017');
-    let geometry = ee.Geometry({ "type": "Polygon", "coordinates": [[[-47.988281, -0.703107], [-44.25293, -2.986927], [-43.505859, -2.372369], [-46.757813, -0.439449], [-46.757813, -0.439449], [-47.988281, -0.703107]]] });
-    let bandName;
+    let geometry = ee.Geometry(JSON.parse(query.geometry));
+    classification = classification.clip(geometry);
+
     let results = [];
-    
-    classification.bandNames().get(0).evaluate((success, failure) => {
-        if (failure === undefined) {
-            classification = classification.clip(geometry);
-            calcularArea(ee, classification, 2, geometry).get(success).evaluate((success, failure) => {
-                
-            });
-        }
-    });
+    let bandName = classification.bandNames().get(0).getInfo();
+    results.push(calcularArea(ee, classification, 2, geometry, bandName));
+    results.push(calcularNumPixels(ee, classification, 2, geometry, bandName));
+    results.push(calcularMedia(ee, classification, 2, geometry, bandName));
+    results.push(calcularMediana(ee, classification, 2, geometry, bandName));
+    results.push(calcularDesvioPadrao(ee, classification, 2, geometry, bandName));
+    response.send({ result: results });
 });
+/*
+.get(window.location.href + 'gee/tools/statistics', 'geometry=' + JSON.stringify(pp.geometry), function (data) {
+	console.log(data);
+});
+*/

@@ -49,7 +49,7 @@ class DrawJS {
                 this._polygonsList = this._polygonsList.filter((element) => { return element != this._editPolygon });
                 this._editPolygon = null;
             } else if (event.key === 'Escape') {
-                this.disableDraw();                
+                this.disableDraw();
             }
         });
     }
