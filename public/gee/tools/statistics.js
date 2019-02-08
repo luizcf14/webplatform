@@ -51,10 +51,9 @@ function calcularDesvioPadrao(ee, classification, id, geometry, bandName) {
 
 exports.run = ((ee, request, response) => {
     var query = JSON.parse(JSON.stringify(request.query));
-    let classification = ee.Image('projects/samm/SAMM/Classification_3/2017');
+    let classification = ee.Image('projects/samm/SAMM/Classification_3/' + query.year);
     let geometry = ee.Geometry(JSON.parse(query.geometry));
     classification = classification.clip(geometry);
-
     let results = [];
     let bandName = classification.bandNames().get(0).getInfo();
     results.push(calcularArea(ee, classification, 2, geometry, bandName));

@@ -220,4 +220,8 @@ class DrawJS {
                 return 1;
         }
     }
+
+    getPolygons(){
+        return this._polygonsList;
+    }
 }//END

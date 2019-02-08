@@ -25,7 +25,6 @@ let rangeValues = [];
 let statesGeometries = [];
 let cityGeometries = [];
 let checks = [{ type: 'check_1', active: false }, { type: 'check_2', active: false }];
-window.checks;
 let checkSubClick = false;
 
 let drawType = null;
@@ -529,6 +528,14 @@ function tools(currentMap) {
                 }
             };
 
+            insert_chart.onclick = () => {
+                $("#TVGraph").modal({ backdrop: 'static', keyboard: false });
+                let temp = drawJS.getPolygons()[0].toGeoJSON().geometry;
+                $.get(platform + 'gee/tools/statistics', 'geometry=' + JSON.stringify(temp) + '&year=' + (selectYear), function (data) {
+                    //console.log(data);
+                    $("#TVGraph").modal('hide');
+                });
+            };
             insert_chart.style.cursor = 'pointer';
             insert_chart.setAttribute('title', 'Gerar gráfico');
             insert_chart.innerHTML = 'insert_chart';

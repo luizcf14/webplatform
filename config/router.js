@@ -42,7 +42,6 @@ function postgisFunctions(app, db) {
 };
 
 function getStatistics(app, ee) {
-    console.log(pth + '/gee/tools/statistics');
     app.get(pth + '/gee/tools/statistics', function (request, response) {
         statistics = require(publicPath + path.sep + 'gee' + path.sep + 'tools' + path.sep + 'statistics.js');
         statistics.run(ee, request, response);
