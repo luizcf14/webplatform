@@ -86,7 +86,7 @@ html, body {
 /*filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f2c1c1c1', endColorstr='#f2c1c1c1',GradientType=0 ); /* IE6-9 */
 }
 
-select {
+select > #selectYear{
    /* for Firefox */
    -moz-appearance: none;
    /* for Chrome */

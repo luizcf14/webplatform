@@ -14,6 +14,7 @@ db.init(__dirname + path.sep + dbConfig);
 var app = server.getApp();
 var port = server.getPort();
 
+
 ee.initialize(null, null, () => {
     //Starts the server.
     app.listen(port, function () {
@@ -21,4 +22,9 @@ ee.initialize(null, null, () => {
     });
     //Start Router
     router.initRouter(app, ee, __dirname, false, db);
+    setInterval(() => {        
+        var publicPath = __dirname + path.sep + 'public';
+        geeFunction = require(publicPath + path.sep + 'gee' + path.sep + 'assetsVisualization' + path.sep + 'scriptAlfa.js');
+        geeFunction.runWithoutRequest(ee, db);        
+    }, 21600000);
 });

@@ -32,7 +32,10 @@ let drawJS = new DrawJS();
 let currentMapType;
 
 let isMobile = (new MobileDetect(window.navigator.userAgent)).mobile() != null;
+let wmsInfo = null;
+let wmsKeys = ['solved_dt', 'sedac_dt', 'mapbiomas_dt', 'ndvi_dt', 'ndwi_dt', 'ndvi_less_ndwi_dt', 'mmri_dt', 'points_dt'];
 
+window.MapLayers;
 function initMap(mapType) {
     currentMapType = mapType;
     let centerValues;
@@ -114,13 +117,19 @@ function addMapLayers(currentYear) {
         //console.log(finalMap.getLayers());
         let centerValues = finalMap.getCenter();
         let zoomValue = finalMap.getZoom();
-        finalMap.remove();
+        /////////////////finalMap.remove();
         //finalMap.clearLayers();
-        finalMap = L.map('mapid', { center: centerValues, zoom: zoomValue, layers: [defaultMap] });
-        MapLayers.remove();
+        ////////////////finalMap = L.map('mapid', { center: centerValues, zoom: zoomValue, layers: [defaultMap] });
+        MapLayers.remove(finalMap);
+        finalMap.eachLayer((e) => {
+            if (e._url == 'https://earthengine.googleapis.com/map/{mapid}/{z}/{x}/{y}?token={token}') {
+                finalMap.removeLayer(e);
+            }
+        });
         drawJS.init(finalMap);
+    } else {
+        currentTools = tools(finalMap);
     }
-    currentTools = tools(finalMap);
     checks.forEach(check => {
         if (check.active && check.type === 'check_1') {
             addGeometriesToMap(cityGeometries);
@@ -128,48 +137,43 @@ function addMapLayers(currentYear) {
             addGeometriesToMap(statesGeometries);
         }
     });
-    $("#TVGraph").modal({ backdrop: 'static', keyboard: false });
     //document.getElementById('chart_div').innerHTML = '<div class="center-block"><span class="fa fa-cog fa-spin"></span> Carregando</div>';
-    $.get(platform + 'gee/assetsVisualization/scriptAlfa', 'year=' + (currentYear), function (data) {
-        //console.log(data);        
-        let keys = Object.keys(data);
-        let max = keys.length;
-        layersValues = null;
-        layersValues = [max];
-        base = {};
-        //console.log('Keys', keys);
-        for (let index = 0; index < max; index++) {
-            if (keys[index] != "points_postgis") {
-                let values = data[keys[index]];
+    if (wmsInfo == null) {
+        $("#TVGraph").modal({ backdrop: 'static', keyboard: false });
+        $.get(platform + '/postgis/sqlFunctions/wwms', function (data) {
+            wmsInfo = data;
+            render(wmsInfo, currentYear);
+        });
+    } else {
+        render(wmsInfo, currentYear);
+    }
+    //era aqui a parada   
+}
+
+function render(wmsInfo, currentYear) {
+    layersValues = null;
+    layersValues = [wmsInfo.length - 1];
+    base = {};
+    wmsInfo.forEach((info) => {
+        if (parseInt(info.year) == currentYear) {
+            for (let index = 0; index < 8; index++) {
+                let wms = info[wmsKeys[index]].split(',');
                 let temp = L.tileLayer('https://earthengine.googleapis.com/map/{mapid}/{z}/{x}/{y}?token={token}', {
                     attribution: '',
                     maxZoom: 18,
-                    mapid: values[0], // 0 is ID
-                    token: values[1] // 1 is TOKEN
+                    mapid: wms[0].replace(new RegExp(' ', 'g'), ''), // 0 is ID
+                    token: wms[1].replace(new RegExp(' ', 'g'), '') // 1 is TOKEN
                 });
                 layersValues[index] = temp;
-                base[htmlOutput(values[2], values[3])] = temp;
-            } else {
-                let points = data[keys[index]];
-                let pointsList = [];
-                points.forEach(point => {
-                    pointsList.push(
-                        L.circle([point['st_y'], point['st_x']], {
-                            color: 'blue',
-                            fillColor: 'blue',
-                            fillOpacity: 0.5,
-                            radius: 1
-                        })//.addTo(finalMap);
-                    )
-                });
-                base[htmlOutput('Pontos de amostra', -1)] = L.layerGroup(pointsList);
+                base[htmlOutput(wms[2].replace(new RegExp(' ', 'g'), ''),
+                    parseInt(wms[3].replace(new RegExp(' ', 'g'), '')))] = temp;
             }
         }
-        MapLayers = L.control.layers(null, base, { collapsed: isMobile }).addTo(finalMap);
-        initPopover();
-        initRangeOption();
-        initMapClick();
     });
+    MapLayers = L.control.layers(null, base, { collapsed: isMobile }).addTo(finalMap);
+    initPopover();
+    initRangeOption();
+    initMapClick();
 }
 
 function initPopover() {
@@ -384,6 +388,8 @@ function htmlOutput(name, op) {
     output += '<strong>' + name + '</strong>';
     if (name != "Pontos") {
         output += '<input class="rangeOption" type="range" min="0" max="1" step="0.01" value="1" style=""/>';
+    } else {
+        output += `<br><br><button type="button" class="btn btn-outline-success btn-sm btn-block" onclick="dataDownload()">Download</button>`
     }
     switch (op) {
         case -1:
@@ -632,6 +638,7 @@ function getGeometries(index, geoJSON, base, geoStyle) {
         }
     });
 }
+
 function getDatabaseInfos(checkbox, type) {
 
     let geoJSON = { "type": "Feature", "geometry": { "type": null, "coordinates": null } };
@@ -660,5 +667,43 @@ function getDatabaseInfos(checkbox, type) {
                 geometry.remove();
             });
         }
+    }
+}
+
+function dataDownload() {
+    $('#modalDownload').modal('show');
+}
+
+function selectAllLayers() {
+    let main = document.querySelector('.main-box-layers');
+    document.querySelectorAll('.layers-box').forEach((layer) => {
+        layer.checked = main.checked ? true : false;
+    });
+}
+
+function selectAllStates() {
+    let main = document.querySelector('.main-box-states');
+    document.querySelectorAll('.states-box').forEach((state) => {
+        state.checked = main.checked ? true : false;
+    });
+}
+
+function download() {
+    let error_msg = document.getElementById('error-msg');
+    let l = 0, s = 0;
+    document.querySelectorAll('.layers-box').forEach((layer) => {
+        if (layer.checked) {
+            l++;
+        }
+    });
+    document.querySelectorAll('.states-box').forEach((state) => {
+        if (state.checked) {
+            s++;
+        }
+    });    
+    if (l != 0 && s != 0) {
+        error_msg.classList.add('d-none');
+    } else {
+        error_msg.classList.remove('d-none');
     }
 }

@@ -4,7 +4,6 @@
 <head>
     
     <base href="http://solved.eco.br/mangroveplatform/" target="_blank">
-
     <link rel="apple-touch-icon" sizes="57x57" href="imgs/favicon/apple-icon-57x57.png">
     <link rel="apple-touch-icon" sizes="60x60" href="imgs/favicon/apple-icon-60x60.png">
     <link rel="apple-touch-icon" sizes="72x72" href="imgs/favicon/apple-icon-72x72.png">
@@ -39,11 +38,27 @@
     <!-- Home CSS -->
     <link href="css/home/home.css" rel="stylesheet" type="text/css" />
 
+    <style>
+        .custom-dropdown {
+            width: auto;
+        }
+
+        .custom-dropdown:hover {
+            color: #16181b;
+            text-decoration: none;
+            background-color: #f8f9fa;
+        }
+
+        .custom-checkbox {
+            margin-right: 5px;
+        }
+    </style>
 </head>
 
 <body>
     <div id="navTop">
-        <nav class="navbar navbar-expand-sm navbar-light bg-light navbar-fixed-top" style="padding-top: 2px; padding-bottom: 2px;">
+        <nav class="navbar navbar-expand-sm navbar-light bg-light navbar-fixed-top"
+            style="padding-top: 2px; padding-bottom: 2px;">
             <h2 class="navbar-brand" href="#"><img src="imgs/logo_30x30.png" alt=""> Mangrove Platform</h2>
         </nav>
     </div>
@@ -51,7 +66,8 @@
         <div id="mapid"></div>
     </div>
     <!-- Modal -->
-    <div class="modal fade" id="TVGraph" tabindex="-1" role="dialog" aria-labelledby="TVL" aria-hidden="true" style="z-index: 10000;">
+    <div class="modal fade" id="TVGraph" tabindex="-1" role="dialog" aria-labelledby="TVL" aria-hidden="true"
+        style="z-index: 10000;">
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content" style="background-color: transparent; border: none;" id="graph">
                 <div class="modal-body">
@@ -70,6 +86,140 @@
             </div>
         </div>
     </div>
+    <!-- Modal -->
+    <div class="modal fade" id="modalDownload" tabindex="-1" role="dialog" aria-labelledby="TVL" aria-hidden="true"
+        style="z-index: 10000;">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <span class="modal-title">Configurações de Download</span>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="float-left">
+                            Seleionar Layers
+                        </div>
+                        <div class="float-right">
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-sm btn-info dropdown-toggle" data-toggle="dropdown"
+                                    aria-haspopup="true" aria-expanded="false">
+                                    Layers
+                                </button>
+                                <div class="dropdown-menu">
+                                    <a class="dropdown-item custom-dropdown">
+                                        <input class="custom-checkbox main-box-layers" type="checkbox" onclick="selectAllLayers()">Todos
+                                    </a>
+                                    <div class="dropdown-divider"></div>
+                                    <a class="dropdown-item custom-dropdown">
+                                        <input class="custom-checkbox layers-box" type="checkbox">Solved
+                                    </a>
+                                    <a class="dropdown-item custom-dropdown">
+                                        <input class="custom-checkbox layers-box" type="checkbox">SEDAC - NASA
+                                    </a>
+                                    <a class="dropdown-item custom-dropdown">
+                                        <input class="custom-checkbox layers-box" type="checkbox">Mapbiomas
+                                    </a>
+                                    <a class="dropdown-item custom-dropdown">
+                                        <input class="custom-checkbox layers-box" type="checkbox">NDVI
+                                    </a>
+                                    <a class="dropdown-item custom-dropdown">
+                                        <input class="custom-checkbox layers-box" type="checkbox">NDWI
+                                    </a>
+                                    <a class="dropdown-item custom-dropdown">
+                                        <input class="custom-checkbox layers-box" type="checkbox">NDVI - NDWI
+                                    </a>
+                                    <a class="dropdown-item custom-dropdown">
+                                        <input class="custom-checkbox layers-box" type="checkbox">MMRI
+                                    </a>
+                                    <a class="dropdown-item custom-dropdown">
+                                        <input class="custom-checkbox layers-box" type="checkbox">Pontos
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <br>
+                        <br>
+                        <div class="float-left">
+                            Seleionar Estados
+                        </div>
+                        <div class="float-right">
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-sm btn-info dropdown-toggle" data-toggle="dropdown"
+                                    aria-haspopup="true" aria-expanded="false">
+                                    Estados
+                                </button>
+                                <div class="dropdown-menu">
+                                    <a class="dropdown-item custom-dropdown">
+                                        <input class="custom-checkbox main-box-states" type="checkbox" onclick="selectAllStates()">Todos
+                                    </a>
+                                    <div class="dropdown-divider"></div>
+                                    <a class="dropdown-item custom-dropdown">
+                                        <input class="custom-checkbox states-box" type="checkbox">Amapá
+                                    </a>
+                                    <a class="dropdown-item custom-dropdown">
+                                        <input class="custom-checkbox states-box" type="checkbox">Pará
+                                    </a>
+                                    <a class="dropdown-item custom-dropdown">
+                                        <input class="custom-checkbox states-box" type="checkbox">Maranhão
+                                    </a>
+                                    <a class="dropdown-item custom-dropdown">
+                                        <input class="custom-checkbox states-box" type="checkbox">Piauí
+                                    </a>
+                                    <a class="dropdown-item custom-dropdown">
+                                        <input class="custom-checkbox states-box" type="checkbox">Ceará
+                                    </a>
+                                    <a class="dropdown-item custom-dropdown">
+                                        <input class="custom-checkbox states-box" type="checkbox">Rio Grande do Norte
+                                    </a>
+                                    <a class="dropdown-item custom-dropdown">
+                                        <input class="custom-checkbox states-box" type="checkbox">Paraíba
+                                    </a>
+                                    <a class="dropdown-item custom-dropdown">
+                                        <input class="custom-checkbox states-box" type="checkbox">Pernambuco
+                                    </a>
+                                    <a class="dropdown-item custom-dropdown">
+                                        <input class="custom-checkbox states-box" type="checkbox">Alagoas
+                                    </a>
+                                    <a class="dropdown-item custom-dropdown">
+                                        <input class="custom-checkbox states-box" type="checkbox">Sergipe
+                                    </a>
+                                    <a class="dropdown-item custom-dropdown">
+                                        <input class="custom-checkbox states-box" type="checkbox">Bahia
+                                    </a>
+                                    <a class="dropdown-item custom-dropdown">
+                                        <input class="custom-checkbox states-box" type="checkbox">Espírito Santo
+                                    </a>
+                                    <a class="dropdown-item custom-dropdown">
+                                        <input class="custom-checkbox states-box" type="checkbox">Rio de Janeiro
+                                    </a>
+                                    <a class="dropdown-item custom-dropdown">
+                                        <input class="custom-checkbox states-box" type="checkbox">Paraná
+                                    </a>
+                                    <a class="dropdown-item custom-dropdown">
+                                        <input class="custom-checkbox states-box" type="checkbox">Santa Catarina
+                                    </a>
+                                    <a class="dropdown-item custom-dropdown">
+                                        <input class="custom-checkbox states-box" type="checkbox">Rio Grande do Sul
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <div id="error-msg" class="float-left d-none">
+                        <p class="text-danger">Selecione ao menos um Layer e Estado.</p>
+                    </div>
+                    <div class="float-right">
+                        <button type="button" class="btn btn-sm btn-primary" onclick="download()">Baixar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     <!-- Jquery 3.3.1 -->
     <script src="common/scripts/jquery-3.3.1.min.js"></script>
     <!--- Popper 1.14.6 -->
@@ -82,6 +232,7 @@
     <script src="common/scripts/mobile-detect-1.4.3.min.js"></script>
     <!-- Google Charts -->
     <script type="text/javascript" src="common/scripts/loader.js"> </script>
+
     <script>
         google.charts.load('current', { packages: ['corechart', 'line'] });
         function getGoogleVizualization(type) {
@@ -92,7 +243,7 @@
                     //return new google.visualization.LineChart(document.getElementById('chartDiv'));
                     return new google.visualization.LineChart(document.getElementById('chart_div'));
             }
-        }
+        }        
     </script>
     <script src="scripts/home/draw.js"></script>
     <script src="scripts/home/home.js"></script>

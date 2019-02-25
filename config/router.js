@@ -41,6 +41,13 @@ function postgisFunctions(app, db) {
     });
 };
 
+function getWwmsInfo(app, db) {
+    app.get(pth + '/postgis/sqlFunctions/wwms', function (request, response) {
+        sqlFunctions = require(publicPath + path.sep + 'postgis' + path.sep + 'sqlFunctions.js');
+        sqlFunctions.getWmsInfo(request, response, db);
+    });
+};
+
 function getStatistics(app, ee) {
     app.get(pth + '/gee/tools/statistics', function (request, response) {
         statistics = require(publicPath + path.sep + 'gee' + path.sep + 'tools' + path.sep + 'statistics.js');
@@ -57,6 +64,7 @@ let router = function (app, ee, public, isLocal, db) {
     geeAlfa(app, ee, db);
     geeTemporalVisualization(app, ee);
     postgisFunctions(app, db);
+    getWwmsInfo(app, db);
     getStatistics(app, ee);
     //defaultRoute(app, '*', ' pageNotFound/404.ejs');
     publicPath = public + path.sep + 'public';
