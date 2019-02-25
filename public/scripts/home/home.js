@@ -139,8 +139,8 @@ function addMapLayers(currentYear) {
     });
     //document.getElementById('chart_div').innerHTML = '<div class="center-block"><span class="fa fa-cog fa-spin"></span> Carregando</div>';
     if (wmsInfo == null) {
-        $("#TVGraph").modal({ backdrop: 'static', keyboard: false });
-        $.get(platform + '/postgis/sqlFunctions/wwms', function (data) {
+        //$("#TVGraph").modal({ backdrop: 'static', keyboard: false });
+        $.get(platform + 'postgis/sqlFunctions/wwms', function (data) {
             wmsInfo = data;
             render(wmsInfo, currentYear);
         });
@@ -213,45 +213,7 @@ function initMapClick() {
                     marker = L.marker([e.latlng.lat, e.latlng.lng]).addTo(finalMap);
                 }
                 $.get(platform + 'gee/temporalVisualization/pixelVariation', 'lat=' + (e.latlng.lat) + '&lon=' + (e.latlng.lng), function (data) {
-                    L.Control.Graph = L.Control.extend({
-                        onAdd: function (map) {
-
-                            var main_div = L.DomUtil.create('div', '');
-                            var chart_div = L.DomUtil.create('div', '', main_div);
-                            var header_div = L.DomUtil.create('div', 'text-right');
-                            var header_maximize = L.DomUtil.create('i', 'material-icons');
-                            var header_close = L.DomUtil.create('i', 'material-icons');
-                            var sub_div = L.DomUtil.create('div', '');
-
-                            chart_div.id = 'chartDiv';
-                            header_div.id = 'headerDiv';
-                            header_maximize.id = 'headerMaximize';
-                            header_close.id = 'headerClose';
-                            sub_div.id = 'chart_div';
-
-                            header_div.appendChild(header_maximize);
-                            header_div.appendChild(header_close);
-                            chart_div.appendChild(header_div);
-                            chart_div.appendChild(sub_div);
-
-                            L.DomEvent.disableClickPropagation(main_div);
-                            L.DomEvent.disableClickPropagation(chart_div);
-                            L.DomEvent.disableClickPropagation(header_div);
-                            L.DomEvent.disableClickPropagation(sub_div);
-                            return chart_div;
-                        },
-                        onRemove: function (map) {
-                        }
-                    });
-                    L.control.graph = function (opts) {
-                        return new L.Control.Graph(opts);
-                    }
-                    if (GraphLayer === null) {
-                        GraphLayer = L.control.graph({ position: 'bottomleft' }).addTo(finalMap);
-                    } else {
-                        GraphLayer.remove();
-                        GraphLayer = L.control.graph({ position: 'bottomleft' }).addTo(finalMap);
-                    }
+                    lelfeatGraphControl();
                     //dragElement(document.getElementById("chartDiv"));
                     //document.getElementById('headerDiv').addEventListener('mousedown', mouseDown, false);
                     //window.addEventListener('mouseup', mouseUp, false);
@@ -263,6 +225,48 @@ function initMapClick() {
     }
     finalMap.on('click', onMapClick);
     $("#TVGraph").modal('hide');
+}
+
+function lelfeatGraphControl() {
+    L.Control.Graph = L.Control.extend({
+        onAdd: function (map) {
+
+            var main_div = L.DomUtil.create('div', '');
+            var chart_div = L.DomUtil.create('div', '', main_div);
+            var header_div = L.DomUtil.create('div', 'text-right');
+            var header_maximize = L.DomUtil.create('i', 'material-icons');
+            var header_close = L.DomUtil.create('i', 'material-icons');
+            var sub_div = L.DomUtil.create('div', '');
+
+            chart_div.id = 'chartDiv';
+            header_div.id = 'headerDiv';
+            header_maximize.id = 'headerMaximize';
+            header_close.id = 'headerClose';
+            sub_div.id = 'chart_div';
+
+            header_div.appendChild(header_maximize);
+            header_div.appendChild(header_close);
+            chart_div.appendChild(header_div);
+            chart_div.appendChild(sub_div);
+
+            L.DomEvent.disableClickPropagation(main_div);
+            L.DomEvent.disableClickPropagation(chart_div);
+            L.DomEvent.disableClickPropagation(header_div);
+            L.DomEvent.disableClickPropagation(sub_div);
+            return chart_div;
+        },
+        onRemove: function (map) {
+        }
+    });
+    L.control.graph = function (opts) {
+        return new L.Control.Graph(opts);
+    }
+    if (GraphLayer === null) {
+        GraphLayer = L.control.graph({ position: 'bottomleft' }).addTo(finalMap);
+    } else {
+        GraphLayer.remove();
+        GraphLayer = L.control.graph({ position: 'bottomleft' }).addTo(finalMap);
+    }
 }
 
 function initRangeOption() {
@@ -535,12 +539,20 @@ function tools(currentMap) {
             };
 
             insert_chart.onclick = () => {
-                $("#TVGraph").modal({ backdrop: 'static', keyboard: false });
-                let temp = drawJS.getPolygons()[0].toGeoJSON().geometry;
-                $.get(platform + 'gee/tools/statistics', 'geometry=' + JSON.stringify(temp) + '&year=' + (selectYear), function (data) {
-                    //console.log(data);
-                    $("#TVGraph").modal('hide');
+                //let temp = drawJS.getPolygons();//[0].toGeoJSON().geometry;                
+                let polygons = [];
+                drawJS.getPolygons().forEach((p) => {
+                    polygons.push(p.toGeoJSON().geometry);
                 });
+                if (polygons.length > 0) {
+                    $("#TVGraph").modal({ backdrop: 'static', keyboard: false });
+                    $.get(platform + 'gee/tools/statistics', 'geometry=' + JSON.stringify(polygons) + '&year=' + (selectYear != null ? selectYear : 2000), function (data) {
+                        areaChart(data);
+                        $("#TVGraph").modal('hide');
+                    });
+                } else {
+                    console.log('sem poligonos');
+                }
             };
             insert_chart.style.cursor = 'pointer';
             insert_chart.setAttribute('title', 'Gerar gráfico');
@@ -700,10 +712,91 @@ function download() {
         if (state.checked) {
             s++;
         }
-    });    
+    });
     if (l != 0 && s != 0) {
         error_msg.classList.add('d-none');
     } else {
         error_msg.classList.remove('d-none');
+    }
+}
+
+function areaChart(dt) {
+    //google.charts.load('current', { 'packages': ['corechart'] });
+    ///google.charts.setOnLoadCallback(drawChart);
+    drawChart();
+    function drawChart() {
+        var data = google.visualization.arrayToDataTable([
+            ['Ano', 'Área'],
+            ['2000', dt[0]],
+            ['2001', dt[1]],
+            ['2002', dt[2]],
+            ['2003', dt[3]],
+            ['2004', dt[4]],
+            ['2005', dt[5]],
+            ['2006', dt[6]],
+            ['2007', dt[7]],
+            ['2008', dt[8]],
+            ['2009', dt[9]],
+            ['2010', dt[10]],
+            ['2011', dt[11]],
+            ['2012', dt[12]],
+            ['2013', dt[13]],
+            ['2014', dt[14]],
+            ['2015', dt[15]],
+            ['2016', dt[16]],
+            ['2017', dt[17]]
+        ]);
+        var options = {
+            title: 'Variação anual de Área',
+            hAxis: { title: 'Ano', titleTextStyle: { color: '#333' } },
+            vAxis: { minValue: 0 }
+        };
+        lelfeatGraphControl();
+        if (/*window.innerWidth > 930 && */window.innerWidth < 1100) {
+            document.getElementById('chartDiv').style.width = (window.innerWidth - 230) + 'px';
+        } else {
+            document.getElementById('chartDiv').style.width = '863px';
+        }
+        var chart = new google.visualization.AreaChart(document.getElementById('chart_div'));
+        chart.draw(data, options);
+
+        currentChart = chart;
+        currentGraph = data;
+        currentOptions = options;
+
+        $(window).resize(function () {
+            if (window.innerWidth < 1100) {
+                document.getElementById('chartDiv').style.width = (window.innerWidth - 230) + 'px';
+                currentChart.draw(currentGraph, currentOptions);
+            } else {
+                document.getElementById('chartDiv').style.width = '863px';
+                currentChart.draw(currentGraph, currentOptions);
+            }            
+        });
+
+        /*let headerMaximize;
+        headerMaximize = document.getElementById('headerMaximize');
+        headerMaximize.innerHTML = 'zoom_out_map';
+        headerMaximize.style.padding = '0px 5px 5px 5px';
+        headerMaximize.onmouseover = () => {
+            headerMaximize.style.cursor = 'pointer';
+        }
+        headerMaximize.onclick = () => {
+            savePNG();
+        };
+        */
+        let headerClose = document.getElementById('headerClose');
+        headerClose.innerHTML = 'close';
+        headerClose.style.padding = '0px 5px 5px 5px';
+        headerClose.onmouseover = () => {
+            headerClose.style.cursor = 'pointer';
+        }
+        headerClose.onclick = () => {
+            if (GraphLayer != null) {
+                GraphLayer.remove();
+                GraphLayer = null;
+            }
+        };
+        document.getElementById('headerDiv').classList.add('headerDivCSS');
     }
 }

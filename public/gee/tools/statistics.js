@@ -50,18 +50,28 @@ function calcularDesvioPadrao(ee, classification, id, geometry, bandName) {
 };
 
 exports.run = ((ee, request, response) => {
-    var query = JSON.parse(JSON.stringify(request.query));
-    let classification = ee.Image('projects/samm/SAMM/Classification_3/' + query.year);
-    let geometry = ee.Geometry(JSON.parse(query.geometry));
-    classification = classification.clip(geometry);
+    let query = JSON.parse(JSON.stringify(request.query));
+    let geometries = JSON.parse(request.query.geometry);
     let results = [];
-    let bandName = classification.bandNames().get(0).getInfo();
-    results.push(calcularArea(ee, classification, 2, geometry, bandName));
-    results.push(calcularNumPixels(ee, classification, 2, geometry, bandName));
-    results.push(calcularMedia(ee, classification, 2, geometry, bandName));
-    results.push(calcularMediana(ee, classification, 2, geometry, bandName));
-    results.push(calcularDesvioPadrao(ee, classification, 2, geometry, bandName));
-    response.send({ result: results });
+
+    for (let year = 2000; year < 2018; year++) {
+        console.log(year);
+        let area = 0;
+        geometries.forEach(geom => {
+            let classification = ee.Image('projects/samm/SAMM/Classification_3/' + year);//query.year);
+            let geometry = ee.Geometry(geom);//JSON.parse(query.geometry));
+            classification = classification.clip(geometry);
+            let bandName = classification.bandNames().get(0).getInfo();
+            area += calcularArea(ee, classification, 2, geometry, bandName);
+        });
+        results.push(area);
+    }
+
+    //results.push(calcularNumPixels(ee, classification, 2, geometry, bandName));
+    //results.push(calcularMedia(ee, classification, 2, geometry, bandName));
+    //results.push(calcularMediana(ee, classification, 2, geometry, bandName));
+    //results.push(calcularDesvioPadrao(ee, classification, 2, geometry, bandName));    
+    response.send(results);
 });
 /*
 .get(window.location.href + 'gee/tools/statistics', 'geometry=' + JSON.stringify(pp.geometry), function (data) {
