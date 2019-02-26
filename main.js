@@ -14,6 +14,11 @@ db.init(__dirname + path.sep + dbConfig);
 var app = server.getApp();
 var port = server.getPort();
 
+app.use(function(req, res, next) {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    next();
+});
 
 ee.initialize(null, null, () => {
     //Starts the server.
