@@ -38,6 +38,8 @@ class DrawJS {
                         this.createPolygon();
                     }
                     break;
+                default:
+                    console.log('Case DEFAULT - ERROR');
             }
         });
         /*Remove Draws*/

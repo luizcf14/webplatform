@@ -68,7 +68,7 @@
                 '${MMRI.mapid}, ${MMRI.token}, MMRI, 0', '${pontosMangue.mapid}, ${pontosMangue.token}, Pontos, 0')`;
             */           
             let sql_query = `update wms_info set
-            solved_dt = '${classification.mapid}, ${classification.token}, Solved, 0',
+            solved_dt = '${classification.mapid}, ${classification.token}, Diniz et Al 2019, 0',
             sedac_dt = '${chandra.mapid}, ${chandra.token}, SEDAC - NASA, 0',
             mapbiomas_dt = '${mangroveMap.mapid}, ${mangroveMap.token}, Mapbiomas, 1',
             ndvi_dt = '${NDVI.mapid}, ${NDVI.token}, NDVI, 0',

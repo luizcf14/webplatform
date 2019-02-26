@@ -165,7 +165,7 @@ function render(wmsInfo, currentYear) {
                     token: wms[1].replace(new RegExp(' ', 'g'), '') // 1 is TOKEN
                 });
                 layersValues[index] = temp;
-                base[htmlOutput(wms[2].replace(new RegExp(' ', 'g'), ''),
+                base[htmlOutput(wms[2]/*.replace(new RegExp(' ', 'g'), '')*/,
                     parseInt(wms[3].replace(new RegExp(' ', 'g'), '')))] = temp;
             }
         }
