@@ -35,7 +35,9 @@ let isMobile = (new MobileDetect(window.navigator.userAgent)).mobile() != null;
 let wmsInfo = null;
 let wmsKeys = ['solved_dt', 'sedac_dt', 'mapbiomas_dt', 'ndvi_dt', 'ndwi_dt', 'ndvi_less_ndwi_dt', 'mmri_dt', 'points_dt'];
 
-window.MapLayers;
+let lg = null;
+let divTest = false;
+
 function initMap(mapType) {
     currentMapType = mapType;
     let centerValues;
@@ -90,7 +92,6 @@ function initMap(mapType) {
         }
     });
     drawJS.init(finalMap);
-
 }
 
 function activeLayers() {
@@ -174,6 +175,7 @@ function render(wmsInfo, currentYear) {
     initPopover();
     initRangeOption();
     initMapClick();
+    initLegend();
 }
 
 function initPopover() {
@@ -386,11 +388,13 @@ function changeYear() {
 function removeDefaultClickEvent(event) {
     event.preventDefault();
 }
+
 function htmlOutput(name, op) {
     let output = '';
     let topOptions = document.querySelector(".leaflet-control-layers-overlays");
     output += '<strong>' + name + '</strong>';
-    if (name != "Pontos") {
+
+    if (name != " Pontos") {
         output += '<input class="rangeOption" type="range" min="0" max="1" step="0.01" value="1" style=""/>';
     } else {
         output += `<br><br><button type="button" class="btn btn-outline-success btn-sm btn-block" onclick="dataDownload()">Download</button>`
@@ -421,8 +425,7 @@ function htmlOutput(name, op) {
         default:
             return '';
     }
-};
-
+}
 
 function mouseUp() {
     window.removeEventListener('mousemove', divMove, true);
@@ -440,7 +443,6 @@ function divMove(e) {
     div.style.top = e.clientY + 'px';
     div.style.left = e.clientX + 'px';
 }
-
 
 /*
 // Make the DIV element draggable:
@@ -494,6 +496,7 @@ document.addEventListener('keydown', (event) => {
         $('.leaflet-container').css('cursor', '');
     }
 });
+
 function tools(currentMap) {
     L.Control.Pointer = L.Control.extend({
         onAdd: function (map) {
@@ -771,7 +774,7 @@ function areaChart(dt) {
             } else {
                 document.getElementById('chartDiv').style.width = '863px';
                 currentChart.draw(currentGraph, currentOptions);
-            }            
+            }
         });
 
         /*let headerMaximize;
@@ -799,4 +802,53 @@ function areaChart(dt) {
         };
         document.getElementById('headerDiv').classList.add('headerDivCSS');
     }
+}
+
+function initLegend() {
+    let captionsList = [
+        { caption: '<i style="background:#800026"></i> - Legenda 0<br>', active: false },
+        { caption: '<i style="background:#800026"></i> - Legenda 1<br>', active: false },
+        { caption: '<i style="background:#800026"></i> - Legenda 2<br>', active: false },
+        { caption: '<i style="background:#800026"></i> - Legenda 3<br>', active: false },
+        { caption: '<i style="background:#800026"></i> - Legenda 4<br>', active: false },
+        { caption: '<i style="background:#800026"></i> - Legenda 5<br>', active: false },
+        { caption: '<i style="background:#800026"></i> - Legenda 6<br>', active: false },
+        { caption: '<i style="background:#800026"></i> - Legenda 7<br>', active: false }
+    ];
+
+    let legend = L.control({ position: 'bottomright' });
+    let div = L.DomUtil.create('div', 'info legend');
+
+    let nl = document.querySelectorAll('.leaflet-control-layers-selector');
+    let sl = nl.length;
+    for (let index = 0; index < sl; index++) {
+        nl[index].onclick = () => {
+            legend.onAdd = function (map) {
+                div.innerHTML = '';
+                captionsList[index].active = !captionsList[index].active;
+                captionsList.forEach((cp) => {
+                    if (cp.active) {
+                        div.innerHTML += cp.caption;
+                    }
+                });
+                return div;
+            };
+
+            legend.onRemove = function (map) {
+                divTest = div.innerHTML == '';
+            };
+
+            if (lg === null) {
+                lg = legend.addTo(finalMap);
+            } else {
+                lg.remove(finalMap);
+                lg = legend.addTo(finalMap);
+                if(div.innerHTML == ''){
+                    lg.remove(finalMap);
+                    lg = null;
+                }
+            }
+        };
+    }
+
 }
