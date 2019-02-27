@@ -155,6 +155,10 @@ function render(wmsInfo, currentYear) {
     layersValues = null;
     layersValues = [wmsInfo.length - 1];
     base = {};
+    if (lg != null) {
+        lg.remove(finalMap);
+        lg = null;
+    }
     wmsInfo.forEach((info) => {
         if (parseInt(info.year) == currentYear) {
             for (let index = 0; index < 8; index++) {
@@ -843,7 +847,7 @@ function initLegend() {
             } else {
                 lg.remove(finalMap);
                 lg = legend.addTo(finalMap);
-                if(div.innerHTML == ''){
+                if (div.innerHTML == '') {
                     lg.remove(finalMap);
                     lg = null;
                 }
