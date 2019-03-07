@@ -202,7 +202,7 @@ function initPopover() {
 }
 
 function initMapClick() {
-    function onMapClick(e) {
+    function onMapClick(e) {        
         $('.popover').popover('hide');
         //popup.setLatLng(e.latlng).setContent("Carregando!").openOn(finalMap);
         //$("#TVGraph").modal();

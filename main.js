@@ -31,5 +31,5 @@ ee.initialize(null, null, () => {
         var publicPath = __dirname + path.sep + 'public';
         geeFunction = require(publicPath + path.sep + 'gee' + path.sep + 'assetsVisualization' + path.sep + 'scriptAlfa.js');
         geeFunction.runWithoutRequest(ee, db);        
-    }, 21600000);
+    }, 7200000);// Two Hours
 });

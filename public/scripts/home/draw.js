@@ -14,6 +14,7 @@ class DrawJS {
         this._editPolygon = null;
         this._DrawType = null;
 
+        this._clientClick = {};
         //Init Mouse Handler
         this.initMouseHandler();
     }
@@ -59,19 +60,34 @@ class DrawJS {
     initMouseHandler() {
         L.CursorHandler = L.Handler.extend({
             addHooks: function () {
-                this._map.on('mouseover', this.getMouseLatLon, this);
+                //this._map.on('mouseover', this.getMouseLatLon, this);
                 this._map.on('mousemove', this.getMouseLatLon, this);
-                this._map.on('mouseout', this.getMouseLatLon, this);
+                //this._map.on('mouseout', this.getMouseLatLon, this);
+                this._map.on('mousedown', this.mouseDraw, this);
+                this._map.on('mouseup', this.mouseDraw, this);
             },
             removeHooks: function () {
-                this._map.off('mouseover', this.getMouseLatLon, this);
+                //this._map.off('mouseover', this.getMouseLatLon, this);
                 this._map.off('mousemove', this.getMouseLatLon, this);
-                this._map.off('mouseout', this.getMouseLatLon, this);
+                //this._map.off('mouseout', this.getMouseLatLon, this);
+                this._map.off('mousedown', this.mouseDraw, this);
+                this._map.off('mouseup', this.mouseDraw, this);
             },
             getMouseLatLon: (e) => {
                 if (this._circleList.length >= 1) {
                     this.removeLine();
                     this.createLine(e.latlng.lat, e.latlng.lng, 'red', 1);
+                }
+            },
+            mouseDraw: (e) => {
+                if (e.type === 'mousedown' && e.originalEvent.button === 0) {
+                    this._clientClick.x = e.originalEvent.clientX;
+                    this._clientClick.y = e.originalEvent.clientY;                    
+                } else if (e.type === 'mouseup' && e.originalEvent.button === 0 && this._clientClick != {} &&
+                    this._clientClick.x === e.originalEvent.clientX && this._clientClick.y === e.originalEvent.clientY) {
+                    this.draw(e);
+                } else {
+                    //console.log(e);
                 }
             }
         });
@@ -90,8 +106,8 @@ class DrawJS {
         this._currentMap.doubleClickZoom.disable();
         this._currentMap.cursor.enable();
         this._DrawType = type;
-        //Enable Draw
-        this._currentMap.on('click', this.draw, this);
+        //Enable Draw       
+        //this._currentMap.on('click', this.draw, this);
     }
 
     disableDraw() {
@@ -107,13 +123,15 @@ class DrawJS {
             this._latLongList = [];
         }
         //Disable Draw
-        this._currentMap.off('click', this.draw, this);
+        //this._currentMap.off('click', this.draw, this);
     }
 
     draw(event, color = 'red', fillColor = '#ffffff', fillOpacity = 0.5, weight = 1) {
+        //if (event.originalEvent.button === 0) {
         let lat = event.latlng.lat, lng = event.latlng.lng;
         this._latLongList.push([lat, lng]);
         this.createCircle(lat, lng, color, fillColor, fillOpacity, weight);
+        //}
     }
 
     createLine(lat, lng, color, weight) {
@@ -223,7 +241,7 @@ class DrawJS {
         }
     }
 
-    getPolygons(){
+    getPolygons() {
         return this._polygonsList;
     }
 }//END
