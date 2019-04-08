@@ -1,6 +1,6 @@
 {
-    "host": "pgsql.solved.eco.br",
-    "user": "solved1",
-    "password": "qazx74123",
-    "database": "solved1"
+    "host": "you-server",
+    "user": "you-user",
+    "password": "you-pass",
+    "database": "you-database"
 }
