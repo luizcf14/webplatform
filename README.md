@@ -1,9 +1,10 @@
 # About The Project
 
-This project is the most easy way to publish GEE data, specialy developed from Solved - Solutions in Geoinformation.
+This project is one way to publish GEE data using NodeJS+Express without Tile Servers like Geoserver or Mapserver, developed from Solved - Solutions in Geoinformation.
 
 # Main Objetives
 * Visualize the GEE Data
+* Download Data
 * Export Reports
 * Share the Information
 * Without Cost's
